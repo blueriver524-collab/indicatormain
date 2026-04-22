@@ -1,0 +1,2358 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>환자만족도조사 지표결과보고서</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  /* ── 기본 리셋 ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary:    #1a4fa0;
+    --primary-dk: #0f2f6b;
+    --primary-lt: #e8f0fd;
+    --accent:     #2a7de1;
+    --success:    #1a9e5c;
+    --warning:    #e07d10;
+    --danger:     #c0392b;
+    --gray-1:     #f5f7fa;
+    --gray-2:     #e9ecef;
+    --gray-3:     #ced4da;
+    --gray-5:     #6c757d;
+    --gray-9:     #212529;
+    --radius:     8px;
+    --shadow:     0 2px 12px rgba(0,0,0,.10);
+    --shadow-lg:  0 4px 24px rgba(0,0,0,.14);
+    --font:       'Malgun Gothic', '맑은 고딕', 'Apple SD Gothic Neo', sans-serif;
+  }
+
+  body {
+    font-family: var(--font);
+    background: #eceff4;
+    color: var(--gray-9);
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  /* ── 상단 헤더 바 ── */
+  .topbar {
+    background: linear-gradient(135deg, var(--primary-dk) 0%, var(--primary) 60%, var(--accent) 100%);
+    color: #fff;
+    padding: 18px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow-lg);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 16px; }
+  .topbar-icon {
+    width: 44px; height: 44px;
+    background: rgba(255,255,255,.18);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .topbar-title { font-size: 15px; font-weight: 700; letter-spacing: .5px; opacity: .85; }
+  .topbar-subtitle { font-size: 12px; opacity: .65; margin-top: 2px; }
+  .topbar-actions { display: flex; gap: 10px; }
+  .btn {
+    padding: 8px 18px;
+    border-radius: var(--radius);
+    border: none; cursor: pointer;
+    font-family: var(--font);
+    font-size: 13px; font-weight: 600;
+    transition: all .15s;
+  }
+  .btn-outline {
+    background: rgba(255,255,255,.15);
+    color: #fff;
+    border: 1.5px solid rgba(255,255,255,.45);
+  }
+  .btn-outline:hover { background: rgba(255,255,255,.28); }
+  .btn-white {
+    background: #fff;
+    color: var(--primary);
+  }
+  .btn-white:hover { background: #f0f4ff; }
+  .btn-load {
+    background: rgba(255,255,255,.15); color: #fff;
+    border: 1.5px solid rgba(255,255,255,.45);
+  }
+  .btn-load:hover { background: rgba(255,255,255,.28); }
+  .btn-export {
+    background: #0891b2; color: #fff; border: none;
+    font-weight: 700;
+  }
+  .btn-export:hover { background: #0e7490; }
+  .btn-share {
+    background: #7c3aed; color: #fff; border: none;
+    font-weight: 700; letter-spacing: .02em;
+  }
+  .btn-share:hover { background: #6d28d9; }
+  .btn-save {
+    background: var(--success);
+    color: #fff;
+  }
+  .btn-save:hover { background: #158048; }
+
+  /* ── 개선활동 2컬럼 ── */
+  .improve-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 680px) { .improve-grid { grid-template-columns: 1fr; } }
+  .improve-col {
+    border: 1.5px solid var(--gray-2);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .improve-col-title {
+    font-size: 13px; font-weight: 700;
+    padding: 8px 14px; letter-spacing: .3px;
+  }
+  .improve-before-title {
+    background: #fff3e0; color: #b45309;
+    border-bottom: 1.5px solid #fde68a;
+  }
+  .improve-after-title {
+    background: #ecfdf5; color: #065f46;
+    border-bottom: 1.5px solid #a7f3d0;
+  }
+  .improve-col .field { padding: 12px 12px 0; }
+  .improve-col textarea {
+    width: 100%; border: 1px solid var(--gray-3);
+    border-radius: 6px; padding: 8px 10px;
+    font-family: var(--font); font-size: 13px;
+    resize: vertical; min-height: 90px;
+    outline: none; transition: border-color .2s;
+  }
+  .improve-col textarea:focus { border-color: var(--accent); }
+
+  /* ── 사진 첨부 ── */
+  .photo-section { padding: 10px 12px 12px; }
+  .photo-upload-btn {
+    display: inline-block;
+    padding: 6px 14px;
+    background: var(--primary-lt);
+    color: var(--primary);
+    border: 1.5px dashed var(--accent);
+    border-radius: 6px;
+    font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: all .15s;
+    margin-bottom: 10px;
+  }
+  .photo-upload-btn:hover { background: var(--primary); color: #fff; border-style: solid; }
+  .btn-add-improve {
+    padding: 5px 14px; border-radius: 6px;
+    background: rgba(255,255,255,.18); color: #fff;
+    border: 1.5px solid rgba(255,255,255,.5);
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    font-family: var(--font); transition: all .15s;
+  }
+  .btn-add-improve:hover { background: rgba(255,255,255,.35); }
+  .improve-item {
+    border-bottom: 2px solid var(--gray-2);
+    padding: 16px 20px;
+  }
+  .improve-item:last-child { border-bottom: none; }
+  .improve-item-header {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .improve-item-no {
+    font-size: 12px; font-weight: 700;
+    color: var(--primary);
+    background: var(--primary-lt);
+    padding: 3px 10px; border-radius: 12px;
+  }
+  .improve-item-del {
+    padding: 4px 12px; border-radius: 6px;
+    background: #fee2e2; color: var(--danger);
+    border: 1px solid #fca5a5;
+    font-size: 11px; font-weight: 600; cursor: pointer;
+    font-family: var(--font); transition: all .15s;
+  }
+  .improve-item-del:hover { background: var(--danger); color: #fff; }
+  .photo-list {
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  .photo-thumb {
+    position: relative;
+    width: 90px; height: 90px;
+    border-radius: 6px; overflow: hidden;
+    border: 1.5px solid var(--gray-3);
+    background: var(--gray-1);
+    flex-shrink: 0;
+  }
+  .photo-thumb img {
+    width: 100%; height: 100%; object-fit: cover;
+    display: block; cursor: pointer;
+  }
+  .photo-thumb-del {
+    position: absolute; top: 3px; right: 3px;
+    width: 18px; height: 18px;
+    background: rgba(0,0,0,.6); color: #fff;
+    border-radius: 50%; border: none;
+    font-size: 11px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1;
+  }
+  .photo-thumb-del:hover { background: var(--danger); }
+  /* 인쇄 시 사진도 출력 */
+  @media print {
+    .photo-upload-btn { display: none !important; }
+    .photo-thumb-del  { display: none !important; }
+    /* 개선활동 사진: 인쇄 시 2열 그리드로 크게 출력 */
+    .photo-list {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 8px !important;
+    }
+    .photo-thumb {
+      width: 100% !important;
+      height: 160px !important;
+      break-inside: avoid;
+    }
+    .photo-thumb img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: contain !important;
+    }
+    /* 개선활동 2컬럼 인쇄 */
+    .improve-grid {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      break-inside: avoid;
+    }
+    .improve-item { break-inside: avoid; }
+  }
+
+  /* ── 페이지 타이틀 카드 ── */
+  .page-header {
+    max-width: 960px;
+    margin: 32px auto 0;
+    padding: 0 20px;
+  }
+  .title-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 24px 28px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border-left: 6px solid var(--primary);
+  }
+  .title-card-icon {
+    font-size: 36px;
+    flex-shrink: 0;
+  }
+  .title-year-wrap { flex: 1; }
+  .title-year-label {
+    font-size: 12px; color: var(--gray-5);
+    font-weight: 600; letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .title-year-row {
+    display: flex; align-items: baseline; gap: 6px;
+    flex-wrap: wrap;
+  }
+  #yearInput {
+    font-size: 32px; font-weight: 800;
+    color: var(--primary);
+    border: none; border-bottom: 3px dashed var(--gray-3);
+    background: transparent;
+    width: 90px; text-align: center;
+    outline: none; padding: 0 4px;
+    font-family: var(--font);
+    transition: border-color .2s;
+  }
+  #yearInput:focus { border-color: var(--accent); }
+  .title-year-suffix {
+    font-size: 28px; font-weight: 700; color: var(--gray-9);
+  }
+  .title-survey-subtitle {
+    font-size: 1.05rem;
+    color: #64748b;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    margin-top: 2px;
+  }
+  .title-cycle-select {
+    border: 1px solid #c7d2fe;
+    border-radius: 20px;
+    background: #eef2ff;
+    color: #4f46e5;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    cursor: pointer;
+    margin-left: 10px;
+    outline: none;
+  }
+  .title-cycle-select:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 2px rgba(79,70,229,0.15);
+  }
+  .title-cycle-badge {
+    margin-left: 12px;
+    background: var(--primary-lt);
+    color: var(--primary);
+    font-size: 12px; font-weight: 700;
+    padding: 4px 12px; border-radius: 20px;
+    vertical-align: middle;
+  }
+
+  /* ── 결재라인 ── */
+  .approval-box {
+    flex-shrink: 0;
+    border: 1.5px solid var(--gray-3);
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 12px;
+  }
+  .approval-title {
+    background: var(--primary);
+    color: #fff;
+    text-align: center;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .approval-cols {
+    display: flex;
+  }
+  .approval-col {
+    flex: 1;
+    border-right: 1px solid var(--gray-3);
+    display: flex;
+    flex-direction: column;
+  }
+  .approval-col:last-child { border-right: none; }
+  .approval-col-title {
+    background: var(--gray-1);
+    text-align: center;
+    padding: 5px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gray-5);
+    border-bottom: 1px solid var(--gray-3);
+    letter-spacing: .5px;
+  }
+  .approval-sign {
+    height: 60px;
+    border-bottom: 1px solid var(--gray-3);
+    position: relative;
+    background: #fff;
+  }
+  .approval-sign input {
+    position: absolute; inset: 0;
+    border: none; background: transparent;
+    font-family: var(--font); font-size: 15px; font-weight: 700;
+    color: var(--primary);
+    text-align: center; outline: none;
+    padding: 0 6px; width: 100%; height: 100%;
+    cursor: text;
+  }
+  .approval-sign input::placeholder { color: var(--gray-3); font-size: 11px; font-weight: 400; }
+  .approval-date-row {
+    padding: 5px 8px;
+    text-align: center;
+    font-size: 10px;
+    color: var(--gray-5);
+    background: #fff;
+  }
+  .approval-date-row input {
+    border: none; background: transparent;
+    font-family: var(--font); font-size: 10px; color: var(--gray-5);
+    text-align: center; outline: none; width: 100%;
+    padding: 0;
+  }
+  .approval-name-row {
+    padding: 5px 6px;
+    border-bottom: 1px solid var(--gray-3);
+    background: #f8faff;
+  }
+  .approval-name-row input {
+    border: none; background: transparent;
+    font-family: var(--font); font-size: 12px; font-weight: 600;
+    color: var(--gray-9);
+    text-align: center; outline: none; width: 100%;
+    padding: 0;
+  }
+  .approval-name-row input::placeholder { color: var(--gray-3); font-weight: 400; }
+
+  /* ── 조사기간 일수 배지 ── */
+  .survey-days-badge {
+    margin-top: 6px;
+    font-size: 13px; font-weight: 700;
+    color: var(--primary);
+    text-align: right;
+  }
+  .survey-days-badge span {
+    background: var(--primary-lt);
+    color: var(--primary);
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+  }
+
+  /* ── 세부 분야별 아코디언 ── */
+  .sub-wrap { margin-bottom: 16px; }
+  .sub-wrap-title {
+    background: var(--primary-lt); color: var(--primary);
+    font-size: 12px; font-weight: 700; padding: 8px 14px;
+    border: 1.5px solid #c0d4f5; border-radius: 8px 8px 0 0;
+    border-bottom: none; letter-spacing: .3px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .sub-expand-all-btn {
+    font-size: 11px; font-weight: 700; color: var(--primary);
+    background: #fff; border: 1.5px solid #c0d4f5; border-radius: 14px;
+    padding: 3px 12px; cursor: pointer; white-space: nowrap;
+    transition: background .15s, color .15s;
+  }
+  .sub-expand-all-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .sub-cat {
+    border: 1.5px solid #c0d4f5;
+    border-top: none;
+  }
+  .sub-cat:last-child { border-radius: 0 0 8px 8px; }
+
+  .sub-cat-hd {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    background: #fff;
+    cursor: pointer;
+    user-select: none;
+    transition: background .15s;
+    border-bottom: 1px solid var(--gray-2);
+  }
+  .sub-cat-hd:hover { background: #f8faff; }
+  .sub-cat-no {
+    width: 24px; height: 24px;
+    background: var(--primary); color: #fff;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; flex-shrink: 0;
+  }
+  .sub-cat-nm {
+    flex: 1; font-size: 14px; font-weight: 600; color: var(--gray-9);
+  }
+  .sub-cat-score-wrap {
+    display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+  }
+  .sub-cat-score-input {
+    width: 75px; padding: 5px 8px;
+    border: 1.5px solid #a8c4e8; border-radius: 6px;
+    font-family: var(--font); font-size: 16px; font-weight: 800;
+    color: var(--primary); background: var(--primary-lt);
+    text-align: center; outline: none; cursor: default;
+    pointer-events: none;
+  }
+  .sub-cat-score-input:not(:placeholder-shown) {
+    border-color: var(--accent);
+    background: #ddeeff;
+  }
+  .sub-cat-score-unit { font-size: 12px; color: var(--gray-5); }
+  .sub-cat-avg-badge {
+    font-size: 10px; color: var(--accent); font-weight: 600;
+    background: #e8f0fd; padding: 1px 6px; border-radius: 10px;
+    white-space: nowrap;
+  }
+  .sub-toggle-btn {
+    margin-left: 8px;
+    padding: 4px 10px;
+    background: var(--gray-1); color: var(--gray-5);
+    border: 1px solid var(--gray-3); border-radius: 20px;
+    font-size: 11px; font-weight: 700; cursor: pointer;
+    transition: .15s; white-space: nowrap; flex-shrink: 0;
+  }
+  .sub-toggle-btn:hover { background: var(--primary-lt); color: var(--primary); border-color: var(--accent); }
+  .sub-toggle-btn.open { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+  .sub-cat-body { display: none; padding: 14px 14px 16px; background: #fafcff; border-top: 1px solid #e0eaff; }
+
+  .sub-items-header {
+    display: grid; grid-template-columns: 1fr 90px 36px;
+    gap: 6px; padding: 0 4px 6px;
+    font-size: 11px; font-weight: 700; color: var(--gray-5);
+    letter-spacing: .6px; text-transform: uppercase;
+  }
+  .sub-item-row {
+    display: grid; grid-template-columns: 1fr 90px 36px;
+    gap: 6px; margin-bottom: 6px; align-items: center;
+  }
+  .sub-item-name, .sub-item-score {
+    padding: 7px 10px;
+    border: 1.5px solid var(--gray-3); border-radius: 6px;
+    font-family: var(--font); font-size: 13px; color: var(--gray-9);
+    background: #fff; outline: none; width: 100%; transition: .2s;
+  }
+  .sub-item-name:focus, .sub-item-score:focus {
+    border-color: var(--accent); box-shadow: 0 0 0 2px rgba(42,125,225,.1);
+  }
+  .sub-item-score { text-align: center; font-weight: 700; color: var(--primary); background: var(--primary-lt); }
+  .sub-item-del {
+    width: 30px; height: 30px;
+    background: #fff; border: 1.5px solid var(--gray-3);
+    border-radius: 6px; cursor: pointer; color: var(--danger);
+    font-size: 14px; display: flex; align-items: center; justify-content: center;
+    transition: .15s;
+  }
+  .sub-item-del:hover { background: #fdecea; border-color: var(--danger); }
+  .btn-add-sub {
+    margin-top: 6px;
+    padding: 6px 14px;
+    background: var(--primary-lt); color: var(--primary);
+    border: 1.5px dashed var(--accent); border-radius: 6px;
+    font-family: var(--font); font-size: 12px; font-weight: 700;
+    cursor: pointer; transition: .15s; width: 100%;
+  }
+  .btn-add-sub:hover { background: var(--primary); color: #fff; border-style: solid; }
+  .sub-chart-wrap {
+    margin-top: 14px; display: none;
+    background: #fff; border: 1px solid var(--gray-2); border-radius: 8px;
+    padding: 12px 8px 8px;
+    height: 200px;   /* 화면: 차트 높이 200px (기존 대비 약 절반) */
+    position: relative;
+  }
+  .sub-chart-wrap canvas {
+    max-height: 200px;
+  }
+
+  /* ── 지표 정의 3분할 ── */
+  .def-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .def-table th {
+    width: 110px;
+    background: var(--primary-lt);
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 12px;
+    padding: 10px 12px;
+    border: 1px solid #c0d4f5;
+    vertical-align: top;
+    white-space: nowrap;
+  }
+  .def-table td {
+    border: 1px solid #c0d4f5;
+    padding: 0;
+    background: #fff;
+  }
+  .def-table td textarea {
+    width: 100%; border: none; outline: none;
+    font-family: var(--font); font-size: 13px; color: var(--gray-9);
+    background: transparent; resize: none;
+    padding: 10px 12px; min-height: 48px;
+    line-height: 1.5;
+  }
+  .def-table td textarea:focus { background: #fafcff; }
+
+  /* ── 섹션 그리드 ── */
+  .content {
+    max-width: 960px;
+    margin: 24px auto 0;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .card {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .card.full   { grid-column: 1 / -1; }
+  .card.col-2  { grid-column: span 2; }
+
+  .card-header {
+    background: var(--primary);
+    color: #fff;
+    padding: 10px 18px;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 700; letter-spacing: .3px;
+  }
+  .card-header-icon { font-size: 15px; }
+  .card-header.accent  { background: var(--accent); }
+  .card-header.success { background: var(--success); }
+  .card-header.warning { background: var(--warning); }
+  .card-header.gray    { background: var(--gray-5); }
+  .card-body { padding: 18px; }
+
+  /* ── 폼 요소 ── */
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label {
+    display: block;
+    font-size: 11px; font-weight: 700;
+    color: var(--gray-5);
+    letter-spacing: .8px; text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+  .field input[type="text"],
+  .field input[type="date"],
+  .field textarea,
+  .field select {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid var(--gray-3);
+    border-radius: 6px;
+    font-family: var(--font);
+    font-size: 14px;
+    color: var(--gray-9);
+    background: var(--gray-1);
+    transition: border-color .2s, box-shadow .2s;
+    resize: vertical;
+    outline: none;
+  }
+  .field input:focus,
+  .field textarea:focus,
+  .field select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(42,125,225,.12);
+    background: #fff;
+  }
+  .field textarea { min-height: 100px; }
+  .field textarea.short { min-height: 70px; }
+  .field textarea.tall  { min-height: 130px; }
+
+  /* 날짜 범위 */
+  .date-range {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .date-range input { flex: 1; }
+  .date-range-sep { color: var(--gray-5); font-weight: 700; flex-shrink: 0; }
+
+  /* ── 현 수준 카드 ── */
+  .level-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .level-block label {
+    font-size: 11px; font-weight: 700;
+    color: var(--gray-5); letter-spacing: .8px;
+    text-transform: uppercase; display: block;
+    margin-bottom: 8px;
+  }
+  .radio-group { display: flex; flex-direction: column; gap: 6px; }
+  .radio-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 12px;
+    border: 1.5px solid var(--gray-3);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all .15s;
+    font-size: 13px;
+  }
+  .radio-item:hover { border-color: var(--accent); background: var(--primary-lt); }
+  .radio-item input[type="radio"] { accent-color: var(--accent); }
+  .radio-item.selected-achieve { border-color: var(--success); background: #edfaf3; color: var(--success); font-weight: 700; }
+  .radio-item.selected-fail    { border-color: var(--danger);  background: #fdecea; color: var(--danger);  font-weight: 700; }
+  .radio-item.selected-maintain{ border-color: var(--warning); background: #fef7ec; color: var(--warning); font-weight: 700; }
+  .radio-item.selected-up      { border-color: var(--success); background: #edfaf3; color: var(--success); font-weight: 700; }
+  .radio-item.selected-down    { border-color: var(--danger);  background: #fdecea; color: var(--danger);  font-weight: 700; }
+
+  /* ── 결과 게이지 ── */
+  .gauge-wrap {
+    margin-bottom: 16px;
+  }
+  .gauge-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+  .gauge-label { font-weight: 700; color: var(--gray-9); }
+  .gauge-val   { font-size: 18px; font-weight: 800; color: var(--primary); }
+  .gauge-track {
+    height: 14px;
+    background: var(--gray-2);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .gauge-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--primary));
+    border-radius: 99px;
+    transition: width .6s cubic-bezier(.4,0,.2,1);
+  }
+  .gauge-target-line {
+    display: flex; align-items: center; gap: 6px;
+    margin-top: 5px;
+    font-size: 11px; color: var(--gray-5);
+  }
+  .gauge-target-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--warning);
+    display: inline-block;
+  }
+
+  /* ── 보고 정보 테이블 ── */
+  .info-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .info-table th, .info-table td {
+    padding: 10px 14px;
+    border: 1px solid var(--gray-2);
+    font-size: 13px;
+  }
+  .info-table th {
+    background: var(--gray-1);
+    color: var(--gray-5);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    width: 28%;
+  }
+  .info-table td input {
+    width: 100%; border: none; background: transparent;
+    font-family: var(--font); font-size: 14px; color: var(--gray-9);
+    outline: none; padding: 0;
+  }
+  .info-table td input:focus { background: var(--primary-lt); border-radius: 4px; padding: 2px 6px; }
+
+  /* ── 결과 수치 입력 ── */
+  .score-row {
+    display: flex; gap: 12px; align-items: flex-end;
+    margin-bottom: 14px;
+  }
+  .score-field { flex: 1; }
+  .score-field label {
+    font-size: 11px; font-weight: 700;
+    color: var(--gray-5); letter-spacing: .8px;
+    text-transform: uppercase; display: block; margin-bottom: 5px;
+  }
+  .score-field input {
+    width: 100%; padding: 9px 12px;
+    border: 1.5px solid var(--gray-3); border-radius: 6px;
+    font-family: var(--font); font-size: 18px; font-weight: 800;
+    color: var(--primary); background: var(--primary-lt);
+    outline: none; transition: .2s;
+    text-align: center;
+  }
+  .score-field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(42,125,225,.12); }
+
+  /* ── 푸터 ── */
+  .page-footer {
+    max-width: 960px;
+    margin: 28px auto 0;
+    padding: 0 20px;
+    text-align: right;
+    font-size: 11px;
+    color: var(--gray-5);
+  }
+
+  /* ── 저장 알림 ── */
+  .save-toast {
+    position: fixed;
+    bottom: 30px; right: 30px;
+    background: var(--success);
+    color: #fff;
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-size: 14px; font-weight: 700;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    transform: translateY(12px);
+    transition: all .3s;
+    pointer-events: none;
+    z-index: 9999;
+  }
+  .save-toast.show {
+    opacity: 1; transform: translateY(0);
+  }
+
+  /* ── 인쇄 ── */
+  @media print {
+    @page { margin: 15mm; }
+    body { background: #fff !important; padding: 0 !important; }
+    .topbar, .topbar-actions, .btn { display: none !important; }
+    .page-header { margin-top: 0 !important; padding: 0 !important; max-width: 100% !important; width: 100% !important; box-sizing: border-box !important; }
+    .title-card { box-shadow: none !important; border: 1px solid #ccc !important; width: 100% !important; box-sizing: border-box !important; }
+    .content { max-width: 100% !important; width: 100% !important; padding: 0 !important; box-sizing: border-box !important; }
+    .card { box-shadow: none !important; border: 1px solid #ccc !important; break-inside: avoid; }
+    .content { gap: 8px !important; }
+    #yearInput { border-bottom: 1px solid #999 !important; }
+    .title-year-row {
+      flex-wrap: nowrap !important;
+      align-items: baseline !important;
+      white-space: nowrap !important;
+    }
+    #yearInput {
+      font-size: 22px !important;
+      width: 70px !important;
+    }
+    .title-year-suffix {
+      font-size: 22px !important;
+      white-space: nowrap !important;
+    }
+    .title-cycle-select {
+      font-size: 11px !important;
+    }
+    .approval-box { border: 1px solid #999 !important; }
+    .approval-sign input { font-size: 13px !important; }
+    /* 그래프 영역: 인쇄 영역에 맞게 고정 */
+    .sub-chart-wrap {
+      display: block !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      overflow: hidden !important;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .sub-chart-wrap canvas {
+      max-width: 100% !important;
+      height: 160px !important;
+      max-height: 160px !important;
+    }
+    /* 세부분야 아코디언 인쇄 시 항상 펼침 */
+    .sub-cat-body { display: block !important; }
+    .sub-toggle-btn { display: none !important; }
+    /* 결과 분석 인쇄 시 전체 내용 표시 */
+    #resultAnalysis {
+      height: auto !important;
+      min-height: unset !important;
+      max-height: unset !important;
+      overflow: visible !important;
+      resize: none !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── 상단 바 ── -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-icon">🏥</div>
+    <div>
+      <div class="topbar-title">환자만족도조사 지표결과보고서</div>
+      <div class="topbar-subtitle">의료기관평가인증 지표 관리 | 작성주기: 1년</div>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <div id="hospitalSelector" style="display:none;align-items:center;gap:8px;">
+      <span style="font-size:12px;color:rgba(255,255,255,.75);font-weight:600;">🏨 병원</span>
+      <select id="hospitalSelect" onchange="switchHospital(this.value)"
+        style="padding:6px 10px;border-radius:6px;border:1.5px solid rgba(255,255,255,.4);
+               background:rgba(255,255,255,.15);color:#fff;font-size:12px;font-family:var(--font);
+               cursor:pointer;min-width:130px;">
+        <option value="">-- 선택 --</option>
+      </select>
+      <button class="btn btn-outline" onclick="showNewHospitalDialog()" style="padding:6px 12px;font-size:12px;">＋ 신규</button>
+    </div>
+    <button class="btn btn-outline" onclick="clearAll()">초기화</button>
+    <button class="btn btn-outline" onclick="printReport()">🖨️ 인쇄</button>
+    <button class="btn btn-load" onclick="document.getElementById('loadFileInput').click()" title="불러올 .json 파일을 선택해주세요">📂 불러오기</button>
+    <input type="file" id="loadFileInput" accept=".json" style="display:none" onchange="loadFromFile(this)">
+    <button class="btn btn-export" onclick="exportToFile()" title="저장된 파일은 '다운로드' 폴더에 .json 파일로 저장됩니다.">⬇️ 파일 저장</button>
+  </div>
+</div>
+
+<!-- ── 페이지 타이틀 ── -->
+<div class="page-header">
+  <div class="title-card">
+    <div class="title-card-icon">📋</div>
+    <div class="title-year-wrap">
+      <div class="title-year-label">보고서 제목</div>
+      <div class="title-year-row">
+        <input type="text" id="yearInput" value="2025" maxlength="4" placeholder="년도"
+          oninput="this.value=this.value.replace(/[^0-9]/g,''); if(this.value.length===4) document.getElementById('writeCycle').focus();" />
+        <span class="title-year-suffix">년도&nbsp; 지표결과보고서</span>
+        <select id="writeCycle" class="title-cycle-select">
+          <option value="분기">📅 작성주기: 분기</option>
+          <option value="반기">📅 작성주기: 반기</option>
+          <option value="1년">📅 작성주기: 1년</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 결재라인 -->
+    <div class="approval-box">
+      <div class="approval-title">결 &nbsp; 재</div>
+      <div class="approval-cols">
+        <div class="approval-col">
+          <div class="approval-col-title">담&nbsp;당</div>
+          <div class="approval-name-row">
+            <input type="text" id="approvalName0" placeholder="결재자명" />
+          </div>
+          <div class="approval-sign">
+            <input type="text" id="approvalSign0" placeholder="서명" />
+          </div>
+          <div class="approval-date-row">
+            <input type="date" id="approvalDate0" />
+          </div>
+        </div>
+        <div class="approval-col">
+          <div class="approval-col-title">1차&nbsp;결재</div>
+          <div class="approval-name-row">
+            <input type="text" id="approvalName1" placeholder="결재자명" />
+          </div>
+          <div class="approval-sign">
+            <input type="text" id="approvalSign1" placeholder="서명" />
+          </div>
+          <div class="approval-date-row">
+            <input type="date" id="approvalDate1" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── 콘텐츠 그리드 ── -->
+<div class="content">
+
+  <!-- 지표명 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-header-icon">🏷️</span> 지표명
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label>병원명</label>
+        <input type="text" id="hospitalName" placeholder="병원명을 입력하세요" />
+      </div>
+      <div class="field">
+        <label>지표명</label>
+        <input type="text" id="indicatorName" value="환자만족도 조사" readonly
+          style="background:#eef3fc; color:var(--primary); font-weight:700; cursor:default; border-color:#c0d4f5;" />
+      </div>
+    </div>
+  </div>
+
+  <!-- 목표값 & 조사기간 -->
+  <div class="card">
+    <div class="card-header accent">
+      <span class="card-header-icon">🎯</span> 목표값 &amp; 조사기간
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label>목표값 <span style="font-size:10px;font-weight:600;color:var(--accent);background:var(--primary-lt);padding:1px 7px;border-radius:10px;letter-spacing:0;text-transform:none">5점 만점 기준</span></label>
+        <input type="text" id="targetValue" placeholder="예) 4.0점"
+          oninput="syncTarget('targetValue','targetScore')" />
+      </div>
+      <div class="field">
+        <label>조사기간</label>
+        <div class="date-range">
+          <input type="date" id="surveyStart" oninput="calcSurveyDays()" onchange="calcSurveyDays(); if(this.value) document.getElementById('surveyEnd').focus();" />
+          <span class="date-range-sep">~</span>
+          <input type="date" id="surveyEnd" oninput="calcSurveyDays()" />
+        </div>
+        <div class="survey-days-badge" id="surveyDaysBadge" style="display:none">
+          📅 <span id="surveyDaysText">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 지표정의 -->
+  <div class="card full">
+    <div class="card-header">
+      <span class="card-header-icon">📖</span> 지표 정의
+    </div>
+    <div class="card-body">
+      <table class="def-table">
+        <tr>
+          <th>산&nbsp;&nbsp;출&nbsp;&nbsp;식</th>
+          <td>
+            <textarea id="defFormula" rows="2" placeholder="산출 공식을 입력하세요.">문항별 응답자 점수의 합계 / 전체 응답자 수</textarea>
+          </td>
+        </tr>
+        <tr>
+          <th>포&nbsp;함&nbsp;기&nbsp;준</th>
+          <td>
+            <textarea id="defInclude" rows="2" placeholder="포함 기준을 입력하세요.">조사 기간 내 재원 기간 일주일 이상인 환자</textarea>
+          </td>
+        </tr>
+        <tr>
+          <th>제&nbsp;외&nbsp;기&nbsp;준</th>
+          <td>
+            <textarea id="defExclude" rows="2" placeholder="제외 기준을 입력하세요.">점수 산정이 불가한 항목(기타란의 메모 등)</textarea>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 지표 결과 및 결과분석 -->
+  <div class="card full">
+    <div class="card-header accent">
+      <span class="card-header-icon">📊</span> 지표 결과 및 결과분석
+    </div>
+    <div class="card-body">
+
+      <div class="score-row">
+        <div class="score-field">
+          <label>결과값 (점수 / %) <span style="font-size:10px;font-weight:600;color:var(--accent);background:var(--primary-lt);padding:1px 7px;border-radius:10px;letter-spacing:0;text-transform:none">🔗 자동평균</span></label>
+          <input type="text" id="resultScore" placeholder="—" readonly
+            title="세부 분야 점수의 평균이 자동 계산됩니다"
+            style="cursor:default; background:#ddeeff; border-color:#a8c4e8;" />
+        </div>
+        <div class="score-field">
+          <label>목표값 <span style="font-size:10px;color:var(--accent);font-weight:400;letter-spacing:0">🔗 연동</span></label>
+          <input type="text" id="targetScore" placeholder="—"
+            oninput="syncTarget('targetScore','targetValue'); updateGauge()" />
+        </div>
+        <div class="score-field">
+          <label>전년도 결과</label>
+          <input type="text" id="prevScore" placeholder="—" />
+        </div>
+      </div>
+
+      <!-- 게이지 -->
+      <div class="gauge-wrap">
+        <div class="gauge-row">
+          <span class="gauge-label">달성률</span>
+          <span class="gauge-val" id="gaugeValText">— %</span>
+        </div>
+        <div class="gauge-track">
+          <div class="gauge-fill" id="gaugeFill" style="width:0%"></div>
+        </div>
+        <div class="gauge-target-line">
+          <span class="gauge-target-dot"></span>
+          <span id="gaugeTargetLabel">목표값을 입력하면 달성률이 표시됩니다.</span>
+        </div>
+      </div>
+
+      <!-- 세부 분야별 점수 (아코디언) -->
+      <div class="sub-wrap" id="subWrap">
+        <div class="sub-wrap-title">
+          <span>📋 세부 분야별 점수 — 항목을 펼쳐 세부 항목을 추가하세요</span>
+          <button class="sub-expand-all-btn" id="expandAllBtn" onclick="toggleAllCats()">⊞ 전체 펼치기</button>
+        </div>
+
+        <!-- 1 -->
+        <div class="sub-cat" id="cat-1">
+          <div class="sub-cat-hd" onclick="toggleCat(1)">
+            <span class="sub-cat-no">1</span>
+            <span class="sub-cat-nm">전반적인 시설 만족도</span>
+            <div class="sub-cat-score-wrap" onclick="event.stopPropagation()">
+              <input class="sub-cat-score-input" type="text" id="subScore1" placeholder="—" readonly title="세부항목 점수의 평균이 자동 계산됩니다" />
+              <span class="sub-cat-score-unit">점</span>
+              <span class="sub-cat-avg-badge">자동평균</span>
+            </div>
+            <button class="sub-toggle-btn" id="toggle-btn-1" onclick="event.stopPropagation();toggleCat(1)">▼ 세부항목</button>
+          </div>
+          <div class="sub-cat-body" id="cat-body-1">
+            <div class="sub-items-header"><span>세부 항목명</span><span style="text-align:center">점수</span><span></span></div>
+            <div id="sub-rows-1"></div>
+            <button class="btn-add-sub" onclick="addSubItem(1)">＋ 항목 추가</button>
+            <div class="sub-chart-wrap" id="sub-chart-wrap-1"><canvas id="sub-chart-1"></canvas></div>
+          </div>
+        </div>
+
+        <!-- 2 -->
+        <div class="sub-cat" id="cat-2">
+          <div class="sub-cat-hd" onclick="toggleCat(2)">
+            <span class="sub-cat-no">2</span>
+            <span class="sub-cat-nm">직원의 친절성과 성의에 대한 만족도</span>
+            <div class="sub-cat-score-wrap" onclick="event.stopPropagation()">
+              <input class="sub-cat-score-input" type="text" id="subScore2" placeholder="—" readonly title="세부항목 점수의 평균이 자동 계산됩니다" />
+              <span class="sub-cat-score-unit">점</span>
+              <span class="sub-cat-avg-badge">자동평균</span>
+            </div>
+            <button class="sub-toggle-btn" id="toggle-btn-2" onclick="event.stopPropagation();toggleCat(2)">▼ 세부항목</button>
+          </div>
+          <div class="sub-cat-body" id="cat-body-2">
+            <div class="sub-items-header"><span>세부 항목명</span><span style="text-align:center">점수</span><span></span></div>
+            <div id="sub-rows-2"></div>
+            <button class="btn-add-sub" onclick="addSubItem(2)">＋ 항목 추가</button>
+            <div class="sub-chart-wrap" id="sub-chart-wrap-2"><canvas id="sub-chart-2"></canvas></div>
+          </div>
+        </div>
+
+        <!-- 3 -->
+        <div class="sub-cat" id="cat-3">
+          <div class="sub-cat-hd" onclick="toggleCat(3)">
+            <span class="sub-cat-no">3</span>
+            <span class="sub-cat-nm">영양식단에 대한 만족도</span>
+            <div class="sub-cat-score-wrap" onclick="event.stopPropagation()">
+              <input class="sub-cat-score-input" type="text" id="subScore3" placeholder="—" readonly title="세부항목 점수의 평균이 자동 계산됩니다" />
+              <span class="sub-cat-score-unit">점</span>
+              <span class="sub-cat-avg-badge">자동평균</span>
+            </div>
+            <button class="sub-toggle-btn" id="toggle-btn-3" onclick="event.stopPropagation();toggleCat(3)">▼ 세부항목</button>
+          </div>
+          <div class="sub-cat-body" id="cat-body-3">
+            <div class="sub-items-header"><span>세부 항목명</span><span style="text-align:center">점수</span><span></span></div>
+            <div id="sub-rows-3"></div>
+            <button class="btn-add-sub" onclick="addSubItem(3)">＋ 항목 추가</button>
+            <div class="sub-chart-wrap" id="sub-chart-wrap-3"><canvas id="sub-chart-3"></canvas></div>
+          </div>
+        </div>
+
+        <!-- 4 -->
+        <div class="sub-cat" id="cat-4">
+          <div class="sub-cat-hd" onclick="toggleCat(4)">
+            <span class="sub-cat-no">4</span>
+            <span class="sub-cat-nm">환자에 대한 관심과 서비스 만족도</span>
+            <div class="sub-cat-score-wrap" onclick="event.stopPropagation()">
+              <input class="sub-cat-score-input" type="text" id="subScore4" placeholder="—" readonly title="세부항목 점수의 평균이 자동 계산됩니다" />
+              <span class="sub-cat-score-unit">점</span>
+              <span class="sub-cat-avg-badge">자동평균</span>
+            </div>
+            <button class="sub-toggle-btn" id="toggle-btn-4" onclick="event.stopPropagation();toggleCat(4)">▼ 세부항목</button>
+          </div>
+          <div class="sub-cat-body" id="cat-body-4">
+            <div class="sub-items-header"><span>세부 항목명</span><span style="text-align:center">점수</span><span></span></div>
+            <div id="sub-rows-4"></div>
+            <button class="btn-add-sub" onclick="addSubItem(4)">＋ 항목 추가</button>
+            <div class="sub-chart-wrap" id="sub-chart-wrap-4"><canvas id="sub-chart-4"></canvas></div>
+          </div>
+        </div>
+
+        <!-- 5 -->
+        <div class="sub-cat" id="cat-5">
+          <div class="sub-cat-hd" onclick="toggleCat(5)">
+            <span class="sub-cat-no">5</span>
+            <span class="sub-cat-nm">병원 의료에 대한 전반적인 만족도</span>
+            <div class="sub-cat-score-wrap" onclick="event.stopPropagation()">
+              <input class="sub-cat-score-input" type="text" id="subScore5" placeholder="—" readonly title="세부항목 점수의 평균이 자동 계산됩니다" />
+              <span class="sub-cat-score-unit">점</span>
+              <span class="sub-cat-avg-badge">자동평균</span>
+            </div>
+            <button class="sub-toggle-btn" id="toggle-btn-5" onclick="event.stopPropagation();toggleCat(5)">▼ 세부항목</button>
+          </div>
+          <div class="sub-cat-body" id="cat-body-5">
+            <div class="sub-items-header"><span>세부 항목명</span><span style="text-align:center">점수</span><span></span></div>
+            <div id="sub-rows-5"></div>
+            <button class="btn-add-sub" onclick="addSubItem(5)">＋ 항목 추가</button>
+            <div class="sub-chart-wrap" id="sub-chart-wrap-5"><canvas id="sub-chart-5"></canvas></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="field">
+        <label>결과 분석 <span style="font-size:10px;font-weight:600;color:var(--success);background:#edfaf3;padding:1px 7px;border-radius:10px;letter-spacing:0;text-transform:none">🤖 자동 분석</span></label>
+        <textarea id="resultAnalysis" class="tall" readonly placeholder="세부 항목 점수를 입력하면 자동으로 분석됩니다."
+          style="background:#f8fffe; border-color:#a8d8c0; color:#1a3a2a; font-size:13px; line-height:1.8; cursor:default; resize:none; overflow:hidden; height:auto;"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- 현 수준 -->
+  <div class="card full">
+    <div class="card-header success">
+      <span class="card-header-icon">📈</span> 현 수준
+    </div>
+    <div class="card-body">
+      <div class="level-grid">
+        <div class="level-block">
+          <label>달성 여부 <span style="font-size:10px;font-weight:600;color:var(--accent);background:var(--primary-lt);padding:1px 7px;border-radius:10px;letter-spacing:0;text-transform:none">🔗 자동연동</span></label>
+          <div class="radio-group" id="achieveGroup">
+            <label class="radio-item" id="a1">
+              <input type="radio" name="achieve" value="achieved"> ✅ 목표 달성
+            </label>
+            <label class="radio-item" id="a2">
+              <input type="radio" name="achieve" value="failed"> ❌ 목표 미달성
+            </label>
+            <label class="radio-item" id="a3">
+              <input type="radio" name="achieve" value="maintained"> ➡️ 유지
+            </label>
+          </div>
+        </div>
+        <div class="level-block">
+          <label>추세</label>
+          <div class="radio-group" id="trendGroup">
+            <label class="radio-item" id="t1">
+              <input type="radio" name="trend" value="up" onchange="styleRadio('trendGroup','t1','selected-up')"> 📈 향상시킬 필요가 있음
+            </label>
+            <label class="radio-item" id="t2">
+              <input type="radio" name="trend" value="same" onchange="styleRadio('trendGroup','t2','selected-maintain')"> ➡️ 현 상태 유지
+            </label>
+            <label class="radio-item" id="t3">
+              <input type="radio" name="trend" value="down" onchange="styleRadio('trendGroup','t3','selected-down')"> 📉 과도한 달성으로 수준 감소 필요
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 개선활동 -->
+  <div class="card full">
+    <div class="card-header warning" style="display:flex;align-items:center;justify-content:space-between;">
+      <span><span class="card-header-icon">🔧</span> 개선활동</span>
+      <button class="btn-add-improve" onclick="addImproveItem()">＋ 개선활동 추가</button>
+    </div>
+    <div class="card-body" style="padding:0;">
+      <div id="improveItemList"></div>
+    </div>
+  </div>
+
+  <div class="card full">
+    <div class="card-header gray">
+      <span class="card-header-icon">📝</span> 비고
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label>비고</label>
+        <textarea id="remarks" class="short" placeholder="기타 특이사항, 참고사항 등을 입력하세요."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- 보고 정보 -->
+  <div class="card full">
+    <div class="card-header">
+      <span class="card-header-icon">📌</span> 보고 정보
+    </div>
+    <div class="card-body">
+      <table class="info-table">
+        <tr>
+          <th>보고일</th>
+          <td><input type="date" id="reportDate" /></td>
+          <th>담당부서</th>
+          <td><input type="text" id="department" placeholder="" /></td>
+        </tr>
+        <tr>
+          <th>직책(급)/담당자</th>
+          <td colspan="3"><input type="text" id="manager" placeholder="이름/서명" style="width:100%;" /></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<div class="page-footer">
+  ※ 본 보고서는 의료기관평가인증 지표 관리 목적으로 작성됩니다. (작성주기: 1년)
+</div>
+
+<!-- 저장 알림 -->
+<div class="save-toast" id="saveToast">✅ 데이터가 저장되었습니다.</div>
+
+<script>
+  // ── 조사기간 일수 자동계산 ──
+  function calcSurveyDays() {
+    const s = document.getElementById('surveyStart').value;
+    const e = document.getElementById('surveyEnd').value;
+    const badge = document.getElementById('surveyDaysBadge');
+    const txt   = document.getElementById('surveyDaysText');
+    if (s && e) {
+      const days = Math.round((new Date(e) - new Date(s)) / (1000 * 60 * 60 * 24));
+      if (days >= 0) {
+        txt.textContent = days + '일간';
+        badge.style.display = 'block';
+      } else {
+        txt.textContent = '종료일이 시작일보다 앞섭니다';
+        badge.style.display = 'block';
+      }
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  // ── 목표값 양방향 연동 ──
+  let _syncLock = false;
+  function syncTarget(srcId, dstId) {
+    if (_syncLock) return;
+    _syncLock = true;
+    const src = document.getElementById(srcId);
+    const dst = document.getElementById(dstId);
+    if (src && dst) dst.value = src.value;
+    _syncLock = false;
+  }
+
+  // ── 게이지 업데이트 ──
+  function updateGauge() {
+    const result = parseFloat(document.getElementById('resultScore').value);
+    const target = parseFloat(document.getElementById('targetScore').value);
+    const fill   = document.getElementById('gaugeFill');
+    const valTxt = document.getElementById('gaugeValText');
+    const lbl    = document.getElementById('gaugeTargetLabel');
+
+    if (!isNaN(result) && !isNaN(target) && target > 0) {
+      const pct = Math.min(Math.round(result / target * 100), 150);
+      const display = Math.round(result / target * 100);
+      fill.style.width = Math.min(pct, 100) + '%';
+      fill.style.background = display >= 100
+        ? 'linear-gradient(90deg, #1a9e5c, #25d373)'
+        : display >= 80
+          ? 'linear-gradient(90deg, #e07d10, #f4a235)'
+          : 'linear-gradient(90deg, #c0392b, #e74c3c)';
+      valTxt.textContent = display + ' %';
+      lbl.textContent = `목표값 ${target} 기준 달성률`;
+
+      // ── 달성 여부 자동 선택 ──
+      if (result >= target) {
+        autoSelectAchieve('achieved', 'a1', 'selected-achieve');
+      } else {
+        autoSelectAchieve('failed', 'a2', 'selected-fail');
+      }
+    } else {
+      fill.style.width = '0%';
+      valTxt.textContent = '— %';
+      lbl.textContent = '결과값과 목표값을 입력하면 달성률이 표시됩니다.';
+
+      // 결과값·목표값 없으면 유지로 설정
+      autoSelectAchieve('maintained', 'a3', 'selected-maintain');
+    }
+    generateAnalysis();
+  }
+
+  // 달성 여부 라디오 자동 선택 (직접 수정도 유지)
+  function autoSelectAchieve(value, itemId, cls) {
+    const radio = document.querySelector(`input[name="achieve"][value="${value}"]`);
+    if (!radio) return;
+    radio.checked = true;
+    styleRadio('achieveGroup', itemId, cls);
+  }
+
+  // ── 라디오 스타일 ──
+  function styleRadio(groupId, selectedId, cls) {
+    const items = document.getElementById(groupId).querySelectorAll('.radio-item');
+    items.forEach(el => {
+      el.className = 'radio-item';
+    });
+    document.getElementById(selectedId).classList.add(cls);
+  }
+
+  // ── 세부 항목 아코디언 ──
+  function toggleCat(id) {
+    const body = document.getElementById(`cat-body-${id}`);
+    const btn  = document.getElementById(`toggle-btn-${id}`);
+    const open = body.style.display !== 'block';
+    body.style.display = open ? 'block' : 'none';
+    btn.textContent = open ? '▲ 세부항목' : '▼ 세부항목';
+    btn.classList.toggle('open', open);
+    if (open) renderSubChart(id);
+  }
+
+  let _subRowId = 0;
+  function addSubItem(catId, name='', score='') {
+    const container = document.getElementById(`sub-rows-${catId}`);
+    const rid = ++_subRowId;
+    const row = document.createElement('div');
+    row.className = 'sub-item-row';
+    row.dataset.rid = rid;
+    row.innerHTML = `
+      <input class="sub-item-name" type="text" placeholder="항목명 입력" value="${name}"
+        oninput="renderSubChart(${catId})" />
+      <input class="sub-item-score" type="text" placeholder="—" value="${score}"
+        oninput="renderSubChart(${catId})" />
+      <button class="sub-item-del" onclick="removeSubItem(${catId}, ${rid})" title="삭제">✕</button>`;
+    container.appendChild(row);
+    renderSubChart(catId);
+  }
+
+  function removeSubItem(catId, rid) {
+    const container = document.getElementById(`sub-rows-${catId}`);
+    const row = container.querySelector(`[data-rid="${rid}"]`);
+    if (row) { container.removeChild(row); renderSubChart(catId); }
+  }
+
+  // ── Chart.js 막대 그래프 ──
+  const _subCharts = {};
+  const _barColors = ['#4472C4','#ED7D31','#A9D18E','#4BACC6','#7030A0','#FFC000','#FF7C80','#548235'];
+
+  const _dataLabelPlugin = {
+    id: 'datalabels',
+    afterDatasetsDraw(chart) {
+      const ctx = chart.ctx;
+      // 목표값 (line 데이터셋에서 추출)
+      let targetVal = null;
+      chart.data.datasets.forEach(ds => {
+        if (ds.type === 'line' && ds.data.length > 0) targetVal = ds.data[0];
+      });
+      chart.data.datasets.forEach((ds, di) => {
+        if (ds.type === 'line') return;
+        const meta = chart.getDatasetMeta(di);
+        meta.data.forEach((bar, idx) => {
+          const v = ds.data[idx];
+          if (v === undefined || v === null) return;
+          const achieved = targetVal !== null ? v >= targetVal : null;
+          ctx.save();
+          ctx.fillStyle = achieved === true ? '#0e6b3e'
+                        : achieved === false ? '#922b21'
+                        : '#1a3a6b';
+          ctx.font = `bold 13px 'Malgun Gothic', sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.fillText(v, bar.x, bar.y - 7);
+          ctx.restore();
+        });
+      });
+    }
+  };
+
+  function renderSubChart(catId) {
+    const rows = document.querySelectorAll(`#sub-rows-${catId} .sub-item-row`);
+    const labels = [], scores = [];
+    rows.forEach(row => {
+      const nm = row.querySelector('.sub-item-name').value.trim() || '(항목명)';
+      const sc = parseFloat(row.querySelector('.sub-item-score').value);
+      if (!isNaN(sc)) { labels.push(nm); scores.push(sc); }
+    });
+
+    // ── 평균 자동 계산 → 헤더 점수 업데이트 ──
+    const avgInput = document.getElementById(`subScore${catId}`);
+    if (avgInput) {
+      if (scores.length > 0) {
+        const avg = (scores.reduce((a, b) => a + b, 0) / scores.length);
+        avgInput.value = avg % 1 === 0 ? avg.toFixed(1) : avg.toFixed(2);
+      } else {
+        avgInput.value = '';
+      }
+    }
+
+    // ── 5개 분야 평균 → 결과값 자동 업데이트 ──
+    updateResultScore();
+
+    const wrap = document.getElementById(`sub-chart-wrap-${catId}`);
+    if (scores.length === 0) { wrap.style.display = 'none'; return; }
+    wrap.style.display = 'block';
+
+    const target = parseFloat(document.getElementById('targetScore').value);
+    const canvas = document.getElementById(`sub-chart-${catId}`);
+
+    if (_subCharts[catId]) { _subCharts[catId].destroy(); }
+
+    // ── 목표 달성 여부에 따라 색상 분기 ──
+    const hasTarget = !isNaN(target) && target > 0;
+    const bgColors = scores.map(s =>
+      hasTarget ? (s >= target ? 'rgba(26,158,92,0.75)' : 'rgba(192,57,43,0.70)')
+                : 'rgba(68,114,196,0.80)'
+    );
+    const bdColors = scores.map(s =>
+      hasTarget ? (s >= target ? '#1a9e5c' : '#c0392b')
+                : '#2a5fa0'
+    );
+
+    const datasets = [{
+      type: 'bar',
+      label: hasTarget ? '달성' : '점수',
+      data: scores,
+      backgroundColor: bgColors,
+      borderColor: bdColors,
+      borderWidth: 1.5, maxBarThickness: 70,
+    }];
+    if (hasTarget) {
+      datasets.push({
+        type: 'line', label: `목표 (${target}점)`,
+        data: Array(labels.length).fill(target),
+        borderColor: '#e07d10', borderDash: [6, 4], borderWidth: 2.5,
+        pointStyle: 'rectRot', pointRadius: 5, pointBackgroundColor: '#e07d10',
+        fill: false, tension: 0, order: 0,
+      });
+    }
+
+    _subCharts[catId] = new Chart(canvas, {
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: hasTarget, position: 'top',
+            labels: {
+              font: { family: "'Malgun Gothic', sans-serif", size: 12 },
+              generateLabels(chart) {
+                const items = Chart.defaults.plugins.legend.labels.generateLabels(chart);
+                // 달성/미달성 커스텀 범례 추가
+                if (hasTarget) {
+                  return [
+                    { text: '목표 달성', fillStyle: 'rgba(26,158,92,0.75)', strokeStyle: '#1a9e5c', lineWidth: 1.5, hidden: false },
+                    { text: '목표 미달성', fillStyle: 'rgba(192,57,43,0.70)', strokeStyle: '#c0392b', lineWidth: 1.5, hidden: false },
+                    ...items.filter(i => i.text.startsWith('목표 (')),
+                  ];
+                }
+                return items;
+              }
+            }
+          },
+          tooltip: { mode: 'index', intersect: false }
+        },
+        scales: {
+          y: { min: 0, max: 5, ticks: { stepSize: 0.5 },
+               title: { display: true, text: '점수 (5점 만점)',
+                         font: { family: "'Malgun Gothic', sans-serif", size: 11 } } },
+          x: { ticks: { font: { family: "'Malgun Gothic', sans-serif", size: 11 } } }
+        }
+      },
+      plugins: [_dataLabelPlugin]
+    });
+  }
+
+  // ── 5개 분야 평균 → 결과값(resultScore) 자동 계산 ──
+  function updateResultScore() {
+    const vals = [];
+    for (let i = 1; i <= 5; i++) {
+      const v = parseFloat(document.getElementById(`subScore${i}`)?.value);
+      if (!isNaN(v)) vals.push(v);
+    }
+    const el = document.getElementById('resultScore');
+    if (!el) return;
+    if (vals.length > 0) {
+      const total = vals.reduce((a, b) => a + b, 0) / vals.length;
+      el.value = total % 1 === 0 ? total.toFixed(1) : total.toFixed(2);
+    } else {
+      el.value = '';
+    }
+    updateGauge();
+    generateAnalysis();
+  }
+
+  // ── 결과 분석 자동 생성 ──
+  const _CAT_NAMES = [
+    '전반적인 시설 만족도',
+    '직원의 친절성과 성의에 대한 만족도',
+    '영양식단에 대한 만족도',
+    '환자에 대한 관심과 서비스 만족도',
+    '병원 의료에 대한 전반적인 만족도'
+  ];
+
+  function autoResizeAnalysis() {
+    const ta = document.getElementById('resultAnalysis');
+    if (!ta) return;
+    ta.style.height = 'auto';
+    ta.style.height = ta.scrollHeight + 'px';
+  }
+
+  function generateAnalysis() {
+    const textarea = document.getElementById('resultAnalysis');
+    if (!textarea) return;
+
+    const result = parseFloat(document.getElementById('resultScore').value);
+    const target = parseFloat(document.getElementById('targetScore').value);
+    const hasTarget = !isNaN(target) && target > 0;
+
+    if (isNaN(result)) { textarea.value = ''; autoResizeAnalysis(); return; }
+
+    // 분야별 점수 수집
+    const cats = _CAT_NAMES.map((name, i) => {
+      const score = parseFloat(document.getElementById(`subScore${i+1}`)?.value);
+      const rows  = document.querySelectorAll(`#sub-rows-${i+1} .sub-item-row`);
+      const items = [];
+      rows.forEach(row => {
+        const nm = row.querySelector('.sub-item-name').value.trim();
+        const sc = parseFloat(row.querySelector('.sub-item-score').value);
+        if (nm && !isNaN(sc)) items.push({ name: nm, score: sc });
+      });
+      return { name, score: isNaN(score) ? null : score, items };
+    }).filter(c => c.score !== null);
+
+    const lines = [];
+    const fmt = v => Number.isInteger(v) ? v.toFixed(1) : parseFloat(v.toFixed(2));
+
+    // ① 전체 결과 요약
+    lines.push('■ 전체 결과');
+    if (hasTarget) {
+      const diff   = parseFloat((result - target).toFixed(2));
+      const sign   = diff >= 0 ? '+' : '';
+      const ok     = result >= target;
+      lines.push(`환자만족도 조사 결과 ${fmt(result)}점으로, 목표값(${fmt(target)}점) 대비 ${sign}${diff}점으로 목표를 ${ok ? '달성' : '미달성'}하였습니다.`);
+    } else {
+      lines.push(`환자만족도 조사 결과 ${fmt(result)}점입니다.`);
+    }
+    lines.push('');
+
+    // ② 분야별 달성·미달성 현황
+    if (hasTarget && cats.length > 0) {
+      const achieved = cats.filter(c => c.score >= target);
+      const failed   = cats.filter(c => c.score < target);
+      lines.push('■ 분야별 목표 달성 현황');
+      if (achieved.length > 0)
+        lines.push(`[달성 (${achieved.length}개)] ${achieved.map(c => `${c.name} ${fmt(c.score)}점`).join(' / ')}`);
+      if (failed.length > 0)
+        lines.push(`[미달성 (${failed.length}개)] ${failed.map(c => `${c.name} ${fmt(c.score)}점`).join(' / ')}`);
+      lines.push('');
+    }
+
+    // ③ 최고·최저 분야
+    if (cats.length >= 2) {
+      const sorted  = [...cats].sort((a, b) => b.score - a.score);
+      const highest = sorted[0];
+      const lowest  = sorted[sorted.length - 1];
+      lines.push('■ 분야별 분석');
+      lines.push(`• 최고 분야: '${highest.name}' (${fmt(highest.score)}점)`);
+      lines.push(`• 최저 분야: '${lowest.name}' (${fmt(lowest.score)}점)`);
+      if (hasTarget) {
+        const gap = parseFloat((highest.score - lowest.score).toFixed(2));
+        lines.push(`  → 최고·최저 분야 간 점수 차이는 ${gap}점입니다.`);
+      }
+      lines.push('');
+    }
+
+    // ④ 목표 미달성 세부항목
+    if (hasTarget) {
+      const failDetail = [];
+      cats.forEach(c => {
+        if (c.items.length === 0) return;
+        const bad = c.items.filter(it => it.score < target);
+        if (bad.length > 0)
+          failDetail.push(`• ${c.name}\n  → ${bad.map(it => `'${it.name}' ${fmt(it.score)}점`).join(', ')}`);
+      });
+      if (failDetail.length > 0) {
+        lines.push('■ 목표 미달성 세부항목');
+        failDetail.forEach(d => lines.push(d));
+        lines.push('');
+      }
+
+      // 전체 세부항목 달성률
+      const allItems = cats.flatMap(c => c.items);
+      if (allItems.length > 0) {
+        const okCnt  = allItems.filter(it => it.score >= target).length;
+        const pct    = Math.round(okCnt / allItems.length * 100);
+        lines.push(`■ 세부항목 달성률: ${okCnt}/${allItems.length}개 (${pct}%)`);
+        lines.push('');
+      }
+    }
+
+    // ⑤ 종합 의견
+    lines.push('■ 종합 의견');
+    if (hasTarget) {
+      const failedCats = cats.filter(c => c.score < target);
+      if (result >= target) {
+        if (failedCats.length === 0) {
+          lines.push('전 분야에서 목표값을 달성하였습니다. 현 수준을 유지하고 지속적인 모니터링을 통해 서비스 품질을 향상시킬 필요가 있습니다.');
+        } else {
+          lines.push(`전체 결과는 목표를 달성하였으나, ${failedCats.map(c => `'${c.name}'`).join(', ')} 분야에서 목표에 미달하였습니다. 해당 분야에 대한 개선활동이 필요합니다.`);
+        }
+      } else {
+        lines.push(`목표값(${fmt(target)}점)에 미달하였습니다. 특히 ${cats.filter(c => c.score < target).map(c => `'${c.name}'`).join(', ')} 분야의 원인 분석 및 집중적인 개선활동이 요구됩니다.`);
+      }
+    } else {
+      lines.push('목표값을 설정하면 세부 달성 분석이 자동으로 제공됩니다.');
+    }
+
+    textarea.value = lines.join('\n');
+    autoResizeAnalysis();
+  }
+
+  // 저장 시 세부항목 JSON도 저장
+  function saveSubItems() {
+    const data = {};
+    for (let i = 1; i <= 5; i++) {
+      const rows = document.querySelectorAll(`#sub-rows-${i} .sub-item-row`);
+      data[i] = Array.from(rows).map(r => ({
+        name:  r.querySelector('.sub-item-name').value,
+        score: r.querySelector('.sub-item-score').value
+      }));
+    }
+    localStorage.setItem('report_subItems', JSON.stringify(data));
+  }
+
+  function loadSubItems() {
+    const sd = window._SD;
+    let data;
+    if (sd) {
+      data = sd.subs; // 공유 파일 내장 데이터
+    } else {
+      const raw = localStorage.getItem('report_subItems');
+      if (!raw) return;
+      data = JSON.parse(raw);
+    }
+    for (let i = 1; i <= 5; i++) {
+      const items = data[i] || [];
+      document.getElementById(`sub-rows-${i}`).innerHTML = '';
+      items.forEach(it => addSubItem(i, it.name, it.score));
+    }
+  }
+
+  // ── 공유용 HTML 생성 ──
+  function generateShareableHTML() {
+    // 1. 현재 모든 필드 값 수집
+    const fieldData = {};
+    const allFields = [
+      'yearInput','defFormula','defInclude','defExclude','targetValue',
+      'surveyStart','surveyEnd','resultScore','targetScore','prevScore',
+      'subScore1','subScore2','subScore3','subScore4','subScore5',
+      'remarks',
+      'reportDate','department','manager','signature',
+      'approvalName0','approvalSign0','approvalDate0',
+      'approvalName1','approvalSign1','approvalDate1'
+    ];
+    allFields.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) fieldData[id] = el.value;
+    });
+
+    // 2. 라디오 값 수집
+    const achieveEl = document.querySelector('input[name="achieve"]:checked');
+    const trendEl   = document.querySelector('input[name="trend"]:checked');
+    const radioData = {
+      achieve: achieveEl ? achieveEl.value : '',
+      trend:   trendEl   ? trendEl.value   : ''
+    };
+
+    // 3. 세부항목 수집
+    const subData = {};
+    for (let i = 1; i <= 5; i++) {
+      const rows = document.querySelectorAll(`#sub-rows-${i} .sub-item-row`);
+      subData[i] = Array.from(rows).map(r => ({
+        name:  r.querySelector('.sub-item-name').value,
+        score: r.querySelector('.sub-item-score').value
+      }));
+    }
+
+    // 4. 결과 분석 텍스트 수집
+    const analysisEl = document.getElementById('resultAnalysis');
+    const analysisText = analysisEl ? analysisEl.value : '';
+
+    // 5. 현재 HTML 소스에 데이터 주입 스크립트 삽입
+    const sharedScript = `
+<script id="__shared_data__">
+(function(){
+  window._SD = ${JSON.stringify({fields: fieldData, radios: radioData, subs: subData, analysis: analysisText})};
+})();
+<\/script>`;
+
+    // fetch로 현재 파일 소스 읽기 (로컬 파일은 불가하므로 현재 DOM 직렬화 사용)
+    const serializer = new XMLSerializer();
+    let html = '<!DOCTYPE html>\n' + serializer.serializeToString(document);
+
+    // __shared_data__ 스크립트가 이미 있으면 교체, 없으면 </head> 앞에 삽입
+    if (html.includes('id="__shared_data__"')) {
+      html = html.replace(/<script id="__shared_data__">[\s\S]*?<\/script>/g, sharedScript);
+    } else {
+      html = html.replace('</head>', sharedScript + '</head>');
+    }
+
+    // 6. 파일 다운로드
+    const blob = new Blob([html], {type: 'text/html;charset=utf-8'});
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    const today = new Date();
+    const dateStr = `${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}`;
+    a.href     = url;
+    a.download = `환자만족도조사_지표결과보고서_${dateStr}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // ── localStorage 저장 ──
+  const FIELDS = [
+    'yearInput','writeCycle','hospitalName','defFormula','defInclude','defExclude','targetValue',
+    'surveyStart','surveyEnd','resultScore','targetScore','prevScore',
+    'subScore1','subScore2','subScore3','subScore4','subScore5',
+    'remarks',
+    'reportDate','department','manager','signature',
+    'approvalName0','approvalSign0','approvalDate0',
+    'approvalName1','approvalSign1','approvalDate1'
+  ];
+  const RADIOS = ['achieve','trend'];
+
+  // ── 파일로 저장 (JSON 내보내기) ────────────────────────────
+  function exportToFile() {
+    // 현재 모든 데이터 수집
+    const fieldData = {};
+    const allFields = [
+      'yearInput','writeCycle','hospitalName','defFormula','defInclude','defExclude','targetValue',
+      'surveyStart','surveyEnd','resultScore','targetScore','prevScore',
+      'subScore1','subScore2','subScore3','subScore4','subScore5',
+      'remarks','reportDate','department','manager','signature',
+      'approvalName0','approvalSign0','approvalDate0',
+      'approvalName1','approvalSign1','approvalDate1'
+    ];
+    allFields.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) fieldData[id] = el.value;
+    });
+    const achieveEl = document.querySelector('input[name="achieve"]:checked');
+    const trendEl   = document.querySelector('input[name="trend"]:checked');
+    const subData   = {};
+    for (let i = 1; i <= 5; i++) {
+      const rows = document.querySelectorAll(`#sub-rows-${i} .sub-item-row`);
+      subData[i]  = Array.from(rows).map(r => ({
+        name:  r.querySelector('.sub-item-name').value,
+        score: r.querySelector('.sub-item-score').value
+      }));
+    }
+    const analysisEl = document.getElementById('resultAnalysis');
+    const payload = {
+      _version:    '1.0',
+      _savedAt:    new Date().toISOString(),
+      fields:      fieldData,
+      radios:      { achieve: achieveEl ? achieveEl.value : '', trend: trendEl ? trendEl.value : '' },
+      subs:        subData,
+      analysis:    analysisEl ? analysisEl.value : '',
+      improveItems: JSON.parse(JSON.stringify(_improveItems))
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const a    = document.createElement('a');
+    const year = fieldData.yearInput || new Date().getFullYear();
+    const dept = fieldData.hospitalName || fieldData.department || '병원';
+    a.href     = URL.createObjectURL(blob);
+    const now = new Date();
+    const dtStr = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+    a.download = `환자만족도_${dept}_${year}_${dtStr}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+
+    // toast 알림
+    const toast = document.getElementById('saveToast');
+    if (toast) { toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2200); }
+  }
+
+  // ── 파일에서 불러오기 (JSON 가져오기) ───────────────────────
+  function loadFromFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (!data.fields) { alert('올바른 형식의 파일이 아닙니다.'); return; }
+
+        // ── 1단계: 모든 필드 직접 복원 (빈값도 명시적으로 처리) ──
+        const allFields = [
+          'yearInput','writeCycle','hospitalName','defFormula','defInclude','defExclude','targetValue',
+          'surveyStart','surveyEnd','resultScore','targetScore','prevScore',
+          'subScore1','subScore2','subScore3','subScore4','subScore5',
+          'remarks','reportDate','department','manager','signature',
+          'approvalName0','approvalSign0','approvalDate0',
+          'approvalName1','approvalSign1','approvalDate1'
+        ];
+        allFields.forEach(id => {
+          const el  = document.getElementById(id);
+          const val = data.fields[id];
+          if (el && val !== undefined && val !== null) el.value = val;
+        });
+
+        // ── 2단계: 조사기간 날짜 명시적 복원 ──
+        const ss = document.getElementById('surveyStart');
+        const se = document.getElementById('surveyEnd');
+        if (ss && data.fields.surveyStart) ss.value = data.fields.surveyStart;
+        if (se && data.fields.surveyEnd)   se.value = data.fields.surveyEnd;
+        calcSurveyDays();
+
+        // ── 3단계: 결과 분석 복원 ──
+        if (data.analysis) {
+          const ta = document.getElementById('resultAnalysis');
+          if (ta) { ta.value = data.analysis; autoResizeAnalysis(); }
+        }
+
+        // ── 4단계: 라디오 버튼 복원 ──
+        const radioMeta = {
+          achieved:   ['achieveGroup','a1','selected-achieve'],
+          failed:     ['achieveGroup','a2','selected-fail'],
+          maintained: ['achieveGroup','a3','selected-maintain'],
+          up:         ['trendGroup','t1','selected-up'],
+          same:       ['trendGroup','t2','selected-maintain'],
+          down:       ['trendGroup','t3','selected-down'],
+        };
+        if (data.radios) {
+          ['achieve','trend'].forEach(name => {
+            const val = data.radios[name];
+            if (!val) return;
+            const el = document.querySelector(`input[name="${name}"][value="${val}"]`);
+            if (el) { el.checked = true; const m = radioMeta[val]; if(m) styleRadio(m[0],m[1],m[2]); }
+          });
+        }
+
+        // ── 5단계: 세부항목 복원 ──
+        if (data.subs) {
+          for (let i = 1; i <= 5; i++) {
+            const items = data.subs[i] || [];
+            document.getElementById(`sub-rows-${i}`).innerHTML = '';
+            items.forEach(it => addSubItem(i, it.name, it.score));
+          }
+        }
+
+        // ── 6단계: 목표값 연동 ──
+        const tv = document.getElementById('targetValue');
+        const ts = document.getElementById('targetScore');
+        if (tv && ts) {
+          if (tv.value && !ts.value) ts.value = tv.value;
+          else if (ts.value && !tv.value) tv.value = ts.value;
+        }
+
+        // ── 7단계: 개선활동 복원 (중복 없이 1회만) ──
+        _improveItems = [];
+        _improveNextId = 1;
+        if (data.improveItems && data.improveItems.length) {
+          data.improveItems.forEach(it => addImproveItem(it));
+          _improveNextId = Math.max(..._improveItems.map(i => i.id)) + 1;
+        } else {
+          renderImproveItems();
+        }
+
+        // ── 8단계: 게이지·분석 갱신 ──
+        updateGauge();
+        generateAnalysis();
+
+        alert('데이터를 성공적으로 불러왔습니다.');
+      } catch(err) {
+        alert('파일을 읽는 중 오류가 발생했습니다: ' + err.message);
+      }
+    };
+    reader.readAsText(file, 'utf-8');
+    input.value = '';
+  }
+
+  // ── 인쇄: 차트 모두 펼친 후 인쇄 ────────────────────────
+  function toggleAllCats() {
+    const btn = document.getElementById('expandAllBtn');
+    const allOpen = [1,2,3,4,5].every(i => {
+      const body = document.getElementById('cat-body-' + i);
+      return body && body.style.display === 'block';
+    });
+    [1,2,3,4,5].forEach(i => {
+      const body = document.getElementById('cat-body-' + i);
+      const tb   = document.getElementById('toggle-btn-' + i);
+      if (allOpen) {
+        if (body) body.style.display = 'none';
+        if (tb) { tb.textContent = '▼ 세부항목'; tb.classList.remove('open'); }
+      } else {
+        if (body) body.style.display = 'block';
+        if (tb) { tb.textContent = '▲ 세부항목'; tb.classList.add('open'); }
+        renderSubChart(i);
+      }
+    });
+    if (btn) btn.textContent = allOpen ? '⊞ 전체 펼치기' : '⊟ 전체 접기';
+  }
+
+  function printReport() {
+    // 모든 세부분야 아코디언 펼치기
+    for (let i = 1; i <= 5; i++) {
+      const body = document.getElementById('sub-body-' + i);
+      const btn  = document.getElementById('toggle-btn-' + i);
+      if (body && body.style.display === 'none') {
+        body.style.display = 'block';
+        if (btn) btn.classList.add('open');
+        renderSubChart(i);
+      }
+    }
+    // 결과 분석 textarea -> div 교체 (인쇄 시 전체 내용 표시)
+    const ta = document.getElementById('resultAnalysis');
+    let printDiv = null;
+    if (ta) {
+      printDiv = document.createElement('div');
+      printDiv.id = 'resultAnalysisPrintDiv';
+      printDiv.style.cssText = 'white-space:pre-wrap; font-size:13px; line-height:1.8; color:#1a3a2a; background:#f8fffe; border:1px solid #a8d8c0; border-radius:8px; padding:12px; width:100%; box-sizing:border-box;';
+      printDiv.textContent = ta.value;
+      ta.style.display = 'none';
+      ta.parentNode.insertBefore(printDiv, ta.nextSibling);
+    }
+    // 차트 렌더링 완료 후 인쇄
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      window.print();
+      // 인쇄 후 복원
+      if (ta) ta.style.display = '';
+      if (printDiv) printDiv.remove();
+    }));
+  }
+
+  function saveData() {
+    FIELDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) localStorage.setItem('report_' + id, el.value);
+    });
+    RADIOS.forEach(name => {
+      const checked = document.querySelector(`input[name="${name}"]:checked`);
+      localStorage.setItem('report_radio_' + name, checked ? checked.value : '');
+    });
+    saveSubItems();
+    saveImproveItems();
+    updateGauge();
+    const toast = document.getElementById('saveToast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  function loadData() {
+    const sd = window._SD;
+    FIELDS.forEach(id => {
+      // sd 모드: 파일에 해당 키가 없으면 건드리지 않음 (날짜 초기화 방지)
+      const val = sd ? (id in sd.fields ? sd.fields[id] : null)
+                     : localStorage.getItem('report_' + id);
+      const el  = document.getElementById(id);
+      if (el && val !== null && val !== undefined) el.value = val;
+    });
+    if (sd && sd.analysis) {
+      const ta = document.getElementById('resultAnalysis');
+      if (ta) { ta.value = sd.analysis; autoResizeAnalysis(); }
+    }
+    const achieveVal = sd ? sd.radios.achieve : localStorage.getItem('report_radio_achieve');
+    const trendVal   = sd ? sd.radios.trend   : localStorage.getItem('report_radio_trend');
+    const radioMeta = {
+      achieved:   ['achieveGroup','a1','selected-achieve'],
+      failed:     ['achieveGroup','a2','selected-fail'],
+      maintained: ['achieveGroup','a3','selected-maintain'],
+      up:         ['trendGroup','t1','selected-up'],
+      same:       ['trendGroup','t2','selected-maintain'],
+      down:       ['trendGroup','t3','selected-down'],
+    };
+    if (achieveVal) {
+      const el = document.querySelector(`input[name="achieve"][value="${achieveVal}"]`);
+      if (el) { el.checked = true; const m = radioMeta[achieveVal]; if(m) styleRadio(m[0],m[1],m[2]); }
+    }
+    if (trendVal) {
+      const el = document.querySelector(`input[name="trend"][value="${trendVal}"]`);
+      if (el) { el.checked = true; const m = radioMeta[trendVal]; if(m) styleRadio(m[0],m[1],m[2]); }
+    }
+    loadSubItems();
+    loadImproveItems(sd ? sd.improveItems : null);
+    calcSurveyDays();
+    const tv = document.getElementById('targetValue');
+    const ts = document.getElementById('targetScore');
+    if (tv && ts) {
+      if (tv.value && !ts.value) ts.value = tv.value;
+      else if (ts.value && !tv.value) tv.value = ts.value;
+    }
+    updateGauge();
+  }
+
+  function clearAll() {
+    if (!confirm('\ubaa8\ub4e0 \uc785\ub825 \ub0b4\uc6a9\uc744 \ucd08\uae30\ud654\ud558\uc2dc\uac64\uc2b5\ub2c8\uae4c?')) return;
+    FIELDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = id==='yearInput' ? new Date().getFullYear() : '';
+    });
+    RADIOS.forEach(name => { document.querySelectorAll(`input[name="${name}"]`).forEach(r=>r.checked=false); });
+    ['achieveGroup','trendGroup'].forEach(gid => {
+      document.getElementById(gid).querySelectorAll('.radio-item').forEach(el => el.className='radio-item');
+    });
+    for (let i = 1; i <= 5; i++) {
+      document.getElementById(`sub-rows-${i}`).innerHTML = '';
+      const w = document.getElementById(`sub-chart-wrap-${i}`);
+      if (w) w.style.display = 'none';
+      if (_subCharts[i]) { _subCharts[i].destroy(); delete _subCharts[i]; }
+    }
+    localStorage.removeItem('report_subItems');
+    localStorage.removeItem('report_improveItems');
+    _improveItems = []; _improveNextId = 1; renderImproveItems();
+    updateGauge();
+  }
+
+  // ── 서버 연동 (NAS 모드) ──────────────────────────────────
+  const _API = (typeof window !== 'undefined' && window.location.protocol !== 'file:')
+    ? window.location.origin  // 서버에서 열린 경우 자동 감지
+    : null;                   // 로컬 파일로 열린 경우 null
+
+  let _currentHospital = null;  // 현재 선택된 병원 ID
+
+  // 병원 목록 로드
+  async function loadHospitalList() {
+    if (!_API) return;
+    try {
+      const res  = await fetch(_API + '/api/hospitals');
+      const list = await res.json();
+      const sel  = document.getElementById('hospitalSelect');
+      // 기존 옵션 초기화 (첫 번째 "-- 선택 --" 유지)
+      while (sel.options.length > 1) sel.remove(1);
+      list.forEach(h => {
+        const opt = document.createElement('option');
+        opt.value = h.id;
+        const d   = new Date(h.updatedAt);
+        const dt  = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+        opt.textContent = h.label + ' (' + dt + ')';
+        sel.appendChild(opt);
+      });
+      document.getElementById('hospitalSelector').style.display = 'flex';
+    } catch(e) {
+      // 서버 없음 - 로컬 모드로 동작
+    }
+  }
+
+  // 병원 전환
+  async function switchHospital(id) {
+    if (!id) return;
+    _currentHospital = id;
+    try {
+      const res  = await fetch(_API + '/api/report/' + encodeURIComponent(id));
+      if (res.status === 404) {
+        clearAll(true);
+        return;
+      }
+      const data = await res.json();
+      window._SD = data;
+      loadData();
+      generateAnalysis();
+      window._SD = null; // 이후 저장은 서버로
+    } catch(e) {
+      alert('데이터 로드 실패: ' + e.message);
+    }
+  }
+
+  // 신규 병원 추가 다이얼로그
+  function showNewHospitalDialog() {
+    const name = prompt('새 병원명을 입력하세요\n(예: 서울중앙병원)');
+    if (!name || !name.trim()) return;
+    const id = name.trim();
+    const sel = document.getElementById('hospitalSelect');
+    // 이미 있으면 선택만
+    for (let i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].value === id) { sel.value = id; switchHospital(id); return; }
+    }
+    const opt = document.createElement('option');
+    opt.value = id; opt.textContent = id + ' (신규)';
+    sel.appendChild(opt);
+    sel.value = id;
+    _currentHospital = id;
+    clearAll(true);
+  }
+
+  // 서버 저장 오버라이드
+  const _origSaveData = saveData;
+  async function saveData() {
+    _origSaveData(); // localStorage 저장 (로컬 백업)
+    if (!_API || !_currentHospital) return;
+    // 현재 데이터 수집
+    const fieldData = {};
+    FIELDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) fieldData[id] = el.value;
+    });
+    const achieveEl = document.querySelector('input[name="achieve"]:checked');
+    const trendEl   = document.querySelector('input[name="trend"]:checked');
+    const radios    = { achieve: achieveEl ? achieveEl.value : '', trend: trendEl ? trendEl.value : '' };
+    const subData   = {};
+    for (let i = 1; i <= 5; i++) {
+      const rows = document.querySelectorAll(`#sub-rows-${i} .sub-item-row`);
+      subData[i] = Array.from(rows).map(r => ({
+        name:  r.querySelector('.sub-item-name').value,
+        score: r.querySelector('.sub-item-score').value
+      }));
+    }
+    const analysisEl = document.getElementById('resultAnalysis');
+    const payload    = {
+      fields:   fieldData,
+      radios:   radios,
+      subs:     subData,
+      analysis: analysisEl ? analysisEl.value : '',
+      improveItems: JSON.parse(JSON.stringify(_improveItems))
+    };
+    try {
+      await fetch(_API + '/api/report/' + encodeURIComponent(_currentHospital), {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload)
+      });
+    } catch(e) {
+      console.warn('서버 저장 실패 (로컬에는 저장됨)', e);
+    }
+  }
+
+  // clearAll 서버 모드 지원
+  const _origClearAll = clearAll;
+  function clearAll(skipConfirm) {
+    if (!skipConfirm && !confirm('모든 입력 내용을 초기화하시겠습니까?')) return;
+    FIELDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = id==='yearInput' ? new Date().getFullYear() : '';
+    });
+    RADIOS.forEach(name => { document.querySelectorAll(`input[name="${name}"]`).forEach(r=>r.checked=false); });
+    ['achieveGroup','trendGroup'].forEach(gid => {
+      document.getElementById(gid).querySelectorAll('.radio-item').forEach(el => el.className='radio-item');
+    });
+    for (let i = 1; i <= 5; i++) {
+      document.getElementById(`sub-rows-${i}`).innerHTML = '';
+      const w = document.getElementById(`sub-chart-wrap-${i}`);
+      if (w) w.style.display = 'none';
+      if (_subCharts[i]) { _subCharts[i].destroy(); delete _subCharts[i]; }
+    }
+    localStorage.removeItem('report_subItems');
+    updateGauge();
+  }
+
+  // 초기화
+  // ── 개선활동 동적 아이템 ────────────────────────────────────
+  let _improveItems = [];   // [{ id, beforeText, afterText, beforePhotos[], afterPhotos[] }]
+  let _improveNextId = 1;
+
+  function addImproveItem(data) {
+    const id = _improveNextId++;
+    _improveItems.push({
+      id,
+      beforeText:   data ? data.beforeText   : '',
+      afterText:    data ? data.afterText    : '',
+      beforePhotos: data ? data.beforePhotos : [],
+      afterPhotos:  data ? data.afterPhotos  : [],
+    });
+    renderImproveItems();
+    if (!data) {
+      // 새로 추가 시 해당 아이템으로 스크롤
+      const el = document.getElementById('improve-item-' + id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  function removeImproveItem(id) {
+    if (!confirm('이 개선활동 항목을 삭제하시겠습니까?')) return;
+    _improveItems = _improveItems.filter(it => it.id !== id);
+    renderImproveItems();
+  }
+
+  function renderImproveItems() {
+    const container = document.getElementById('improveItemList');
+    if (!container) return;
+    container.innerHTML = '';
+    if (_improveItems.length === 0) {
+      container.innerHTML = '<div style="padding:24px;text-align:center;color:var(--gray-5);font-size:13px;">개선활동 항목이 없습니다. 위의 [＋ 개선활동 추가] 버튼을 눌러 추가하세요.</div>';
+      return;
+    }
+    _improveItems.forEach((item, idx) => {
+      const div = document.createElement('div');
+      div.className = 'improve-item';
+      div.id = 'improve-item-' + item.id;
+      div.innerHTML = `
+        <div class="improve-item-header">
+          <span class="improve-item-no">개선활동 ${idx + 1}</span>
+          <button class="improve-item-del" onclick="removeImproveItem(${item.id})">✕ 삭제</button>
+        </div>
+        <div class="improve-grid">
+          <div class="improve-col">
+            <div class="improve-col-title improve-before-title">📋 개선 전</div>
+            <div style="padding:12px 12px 0;">
+              <textarea rows="4" style="width:100%;resize:vertical;border:1px solid var(--gray-3);border-radius:6px;padding:8px 10px;font-family:var(--font);font-size:13px;outline:none;"
+                placeholder="개선 전 현황 및 문제점을 입력하세요."
+                onchange="updateImproveText(${item.id},'before',this.value)"
+                oninput="updateImproveText(${item.id},'before',this.value)"
+              >${escHtml(item.beforeText)}</textarea>
+            </div>
+            <div class="photo-section">
+              <label class="photo-upload-btn" for="beforePhoto-${item.id}">📷 사진 첨부</label>
+              <input type="file" id="beforePhoto-${item.id}" accept="image/*" multiple style="display:none"
+                onchange="handleImprovePhoto(${item.id},'before',this)">
+              <div id="beforePhotos-${item.id}" class="photo-list"></div>
+            </div>
+          </div>
+          <div class="improve-col">
+            <div class="improve-col-title improve-after-title">✅ 개선 후</div>
+            <div style="padding:12px 12px 0;">
+              <textarea rows="4" style="width:100%;resize:vertical;border:1px solid var(--gray-3);border-radius:6px;padding:8px 10px;font-family:var(--font);font-size:13px;outline:none;"
+                placeholder="개선 후 결과 및 효과를 입력하세요."
+                onchange="updateImproveText(${item.id},'after',this.value)"
+                oninput="updateImproveText(${item.id},'after',this.value)"
+              >${escHtml(item.afterText)}</textarea>
+            </div>
+            <div class="photo-section">
+              <label class="photo-upload-btn" for="afterPhoto-${item.id}">📷 사진 첨부</label>
+              <input type="file" id="afterPhoto-${item.id}" accept="image/*" multiple style="display:none"
+                onchange="handleImprovePhoto(${item.id},'after',this)">
+              <div id="afterPhotos-${item.id}" class="photo-list"></div>
+            </div>
+          </div>
+        </div>`;
+      container.appendChild(div);
+      renderImprovePhotos(item.id, 'before');
+      renderImprovePhotos(item.id, 'after');
+    });
+  }
+
+  function escHtml(str) {
+    return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function updateImproveText(id, type, val) {
+    const item = _improveItems.find(it => it.id === id);
+    if (!item) return;
+    if (type === 'before') item.beforeText = val;
+    else item.afterText = val;
+  }
+
+  function handleImprovePhoto(id, type, input) {
+    const item = _improveItems.find(it => it.id === id);
+    if (!item) return;
+    const photos = type === 'before' ? item.beforePhotos : item.afterPhotos;
+    Array.from(input.files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        photos.push({ name: file.name, dataUrl: e.target.result });
+        renderImprovePhotos(id, type);
+      };
+      reader.readAsDataURL(file);
+    });
+    input.value = '';
+  }
+
+  function renderImprovePhotos(id, type) {
+    const listEl = document.getElementById((type === 'before' ? 'beforePhotos-' : 'afterPhotos-') + id);
+    if (!listEl) return;
+    const item = _improveItems.find(it => it.id === id);
+    if (!item) return;
+    const photos = type === 'before' ? item.beforePhotos : item.afterPhotos;
+    listEl.innerHTML = '';
+    photos.forEach((ph, idx) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'photo-thumb';
+      const img = document.createElement('img');
+      img.src = ph.dataUrl; img.title = ph.name;
+      img.onclick = () => window.open(ph.dataUrl, '_blank');
+      const del = document.createElement('button');
+      del.className = 'photo-thumb-del'; del.textContent = '×';
+      del.onclick = () => { photos.splice(idx, 1); renderImprovePhotos(id, type); };
+      wrap.appendChild(img); wrap.appendChild(del);
+      listEl.appendChild(wrap);
+    });
+  }
+
+  function saveImproveItems() {
+    try {
+      // 사진 제외한 텍스트만 localStorage에 저장 (용량 절약)
+      const slim = _improveItems.map(it => ({
+        id: it.id, beforeText: it.beforeText, afterText: it.afterText,
+        beforePhotos: it.beforePhotos, afterPhotos: it.afterPhotos
+      }));
+      localStorage.setItem('report_improveItems', JSON.stringify(slim));
+    } catch(e) { console.warn('개선활동 저장 실패:', e); }
+  }
+
+  function loadImproveItems(source) {
+    const raw  = source || localStorage.getItem('report_improveItems');
+    const data = typeof raw === 'string' ? JSON.parse(raw || '[]') : (raw || []);
+    if (!data.length) return;
+    _improveItems = [];
+    _improveNextId = 1;
+    data.forEach(it => addImproveItem(it));
+    // nextId 갱신
+    if (_improveItems.length) {
+      _improveNextId = Math.max(..._improveItems.map(i => i.id)) + 1;
+    }
+  }
+
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const yearEl = document.getElementById('yearInput');
+    if (yearEl && !localStorage.getItem('report_yearInput') && !window._SD) {
+      yearEl.value = new Date().getFullYear();
+    }
+    loadData();
+    generateAnalysis();
+    loadHospitalList(); // 서버 모드 감지 및 병원 목록 로드
+    // 세부항목 전체 기본 펼치기
+    [1,2,3,4,5].forEach(i => {
+      const body = document.getElementById('cat-body-' + i);
+      const tb   = document.getElementById('toggle-btn-' + i);
+      if (body) body.style.display = 'block';
+      if (tb) { tb.textContent = '▲ 세부항목'; tb.classList.add('open'); }
+      renderSubChart(i);
+    });
+    const expandBtn = document.getElementById('expandAllBtn');
+    if (expandBtn) expandBtn.textContent = '⊟ 전체 접기';
+  });
+
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      e.preventDefault();
+      saveData();
+    }
+  });
+
+</script>
+</body>
+</html>
