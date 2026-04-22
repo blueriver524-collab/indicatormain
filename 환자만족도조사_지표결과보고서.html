@@ -79,6 +79,16 @@
     color: var(--primary);
   }
   .btn-white:hover { background: #f0f4ff; }
+  .btn-load {
+    background: rgba(255,255,255,.15); color: #fff;
+    border: 1.5px solid rgba(255,255,255,.45);
+  }
+  .btn-load:hover { background: rgba(255,255,255,.28); }
+  .btn-export {
+    background: #0891b2; color: #fff; border: none;
+    font-weight: 700;
+  }
+  .btn-export:hover { background: #0e7490; }
   .btn-share {
     background: #7c3aed; color: #fff; border: none;
     font-weight: 700; letter-spacing: .02em;
@@ -199,6 +209,29 @@
   @media print {
     .photo-upload-btn { display: none !important; }
     .photo-thumb-del  { display: none !important; }
+    /* 개선활동 사진: 인쇄 시 2열 그리드로 크게 출력 */
+    .photo-list {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 8px !important;
+    }
+    .photo-thumb {
+      width: 100% !important;
+      height: 160px !important;
+      break-inside: avoid;
+    }
+    .photo-thumb img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: contain !important;
+    }
+    /* 개선활동 2컬럼 인쇄 */
+    .improve-grid {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      break-inside: avoid;
+    }
+    .improve-item { break-inside: avoid; }
   }
 
   /* ── 페이지 타이틀 카드 ── */
@@ -245,6 +278,29 @@
   #yearInput:focus { border-color: var(--accent); }
   .title-year-suffix {
     font-size: 28px; font-weight: 700; color: var(--gray-9);
+  }
+  .title-survey-subtitle {
+    font-size: 1.05rem;
+    color: #64748b;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    margin-top: 2px;
+  }
+  .title-cycle-select {
+    border: 1px solid #c7d2fe;
+    border-radius: 20px;
+    background: #eef2ff;
+    color: #4f46e5;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    cursor: pointer;
+    margin-left: 10px;
+    outline: none;
+  }
+  .title-cycle-select:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 2px rgba(79,70,229,0.15);
   }
   .title-cycle-badge {
     margin-left: 12px;
@@ -357,7 +413,15 @@
     font-size: 12px; font-weight: 700; padding: 8px 14px;
     border: 1.5px solid #c0d4f5; border-radius: 8px 8px 0 0;
     border-bottom: none; letter-spacing: .3px;
+    display: flex; align-items: center; justify-content: space-between;
   }
+  .sub-expand-all-btn {
+    font-size: 11px; font-weight: 700; color: var(--primary);
+    background: #fff; border: 1.5px solid #c0d4f5; border-radius: 14px;
+    padding: 3px 12px; cursor: pointer; white-space: nowrap;
+    transition: background .15s, color .15s;
+  }
+  .sub-expand-all-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
   .sub-cat {
     border: 1.5px solid #c0d4f5;
     border-top: none;
@@ -458,6 +522,11 @@
     margin-top: 14px; display: none;
     background: #fff; border: 1px solid var(--gray-2); border-radius: 8px;
     padding: 12px 8px 8px;
+    height: 200px;   /* 화면: 차트 높이 200px (기존 대비 약 절반) */
+    position: relative;
+  }
+  .sub-chart-wrap canvas {
+    max-height: 200px;
   }
 
   /* ── 지표 정의 3분할 ── */
@@ -711,15 +780,58 @@
 
   /* ── 인쇄 ── */
   @media print {
-    body { background: #fff; padding: 0; }
+    @page { margin: 15mm; }
+    body { background: #fff !important; padding: 0 !important; }
     .topbar, .topbar-actions, .btn { display: none !important; }
-    .page-header { margin-top: 0; }
-    .title-card { box-shadow: none; border: 1px solid #ccc; }
-    .card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
-    .content { gap: 10px; }
-    #yearInput { border-bottom: 1px solid #999; }
-    .approval-box { border: 1px solid #999; }
-    .approval-sign input { font-size: 13px; }
+    .page-header { margin-top: 0 !important; padding: 0 !important; max-width: 100% !important; width: 100% !important; box-sizing: border-box !important; }
+    .title-card { box-shadow: none !important; border: 1px solid #ccc !important; width: 100% !important; box-sizing: border-box !important; }
+    .content { max-width: 100% !important; width: 100% !important; padding: 0 !important; box-sizing: border-box !important; }
+    .card { box-shadow: none !important; border: 1px solid #ccc !important; break-inside: avoid; }
+    .content { gap: 8px !important; }
+    #yearInput { border-bottom: 1px solid #999 !important; }
+    .title-year-row {
+      flex-wrap: nowrap !important;
+      align-items: baseline !important;
+      white-space: nowrap !important;
+    }
+    #yearInput {
+      font-size: 22px !important;
+      width: 70px !important;
+    }
+    .title-year-suffix {
+      font-size: 22px !important;
+      white-space: nowrap !important;
+    }
+    .title-cycle-select {
+      font-size: 11px !important;
+    }
+    .approval-box { border: 1px solid #999 !important; }
+    .approval-sign input { font-size: 13px !important; }
+    /* 그래프 영역: 인쇄 영역에 맞게 고정 */
+    .sub-chart-wrap {
+      display: block !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      overflow: hidden !important;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .sub-chart-wrap canvas {
+      max-width: 100% !important;
+      height: 160px !important;
+      max-height: 160px !important;
+    }
+    /* 세부분야 아코디언 인쇄 시 항상 펼침 */
+    .sub-cat-body { display: block !important; }
+    .sub-toggle-btn { display: none !important; }
+    /* 결과 분석 인쇄 시 전체 내용 표시 */
+    #resultAnalysis {
+      height: auto !important;
+      min-height: unset !important;
+      max-height: unset !important;
+      overflow: visible !important;
+      resize: none !important;
+    }
   }
 </style>
 </head>
@@ -746,9 +858,10 @@
       <button class="btn btn-outline" onclick="showNewHospitalDialog()" style="padding:6px 12px;font-size:12px;">＋ 신규</button>
     </div>
     <button class="btn btn-outline" onclick="clearAll()">초기화</button>
-    <button class="btn btn-outline" onclick="window.print()">🖨️ 인쇄</button>
-    <button class="btn btn-save" onclick="saveData()">💾 저장</button>
-    <button class="btn btn-share" onclick="generateShareableHTML()">📤 공유용 저장</button>
+    <button class="btn btn-outline" onclick="printReport()">🖨️ 인쇄</button>
+    <button class="btn btn-load" onclick="document.getElementById('loadFileInput').click()" title="불러올 .json 파일을 선택해주세요">📂 불러오기</button>
+    <input type="file" id="loadFileInput" accept=".json" style="display:none" onchange="loadFromFile(this)">
+    <button class="btn btn-export" onclick="exportToFile()" title="저장된 파일은 '다운로드' 폴더에 .json 파일로 저장됩니다.">⬇️ 파일 저장</button>
   </div>
 </div>
 
@@ -760,9 +873,13 @@
       <div class="title-year-label">보고서 제목</div>
       <div class="title-year-row">
         <input type="text" id="yearInput" value="2025" maxlength="4" placeholder="년도"
-          oninput="this.value=this.value.replace(/[^0-9]/g,'')" />
+          oninput="this.value=this.value.replace(/[^0-9]/g,''); if(this.value.length===4) document.getElementById('writeCycle').focus();" />
         <span class="title-year-suffix">년도&nbsp; 지표결과보고서</span>
-        <span class="title-cycle-badge">📅 작성주기: 1년</span>
+        <select id="writeCycle" class="title-cycle-select">
+          <option value="분기">📅 작성주기: 분기</option>
+          <option value="반기">📅 작성주기: 반기</option>
+          <option value="1년">📅 작성주기: 1년</option>
+        </select>
       </div>
     </div>
 
@@ -810,6 +927,10 @@
     </div>
     <div class="card-body">
       <div class="field">
+        <label>병원명</label>
+        <input type="text" id="hospitalName" placeholder="병원명을 입력하세요" />
+      </div>
+      <div class="field">
         <label>지표명</label>
         <input type="text" id="indicatorName" value="환자만족도 조사" readonly
           style="background:#eef3fc; color:var(--primary); font-weight:700; cursor:default; border-color:#c0d4f5;" />
@@ -831,7 +952,7 @@
       <div class="field">
         <label>조사기간</label>
         <div class="date-range">
-          <input type="date" id="surveyStart" oninput="calcSurveyDays()" />
+          <input type="date" id="surveyStart" oninput="calcSurveyDays()" onchange="calcSurveyDays(); if(this.value) document.getElementById('surveyEnd').focus();" />
           <span class="date-range-sep">~</span>
           <input type="date" id="surveyEnd" oninput="calcSurveyDays()" />
         </div>
@@ -913,7 +1034,10 @@
 
       <!-- 세부 분야별 점수 (아코디언) -->
       <div class="sub-wrap" id="subWrap">
-        <div class="sub-wrap-title">📋 세부 분야별 점수 — 항목을 펼쳐 세부 항목을 추가하세요</div>
+        <div class="sub-wrap-title">
+          <span>📋 세부 분야별 점수 — 항목을 펼쳐 세부 항목을 추가하세요</span>
+          <button class="sub-expand-all-btn" id="expandAllBtn" onclick="toggleAllCats()">⊞ 전체 펼치기</button>
+        </div>
 
         <!-- 1 -->
         <div class="sub-cat" id="cat-1">
@@ -1020,7 +1144,7 @@
       <div class="field">
         <label>결과 분석 <span style="font-size:10px;font-weight:600;color:var(--success);background:#edfaf3;padding:1px 7px;border-radius:10px;letter-spacing:0;text-transform:none">🤖 자동 분석</span></label>
         <textarea id="resultAnalysis" class="tall" readonly placeholder="세부 항목 점수를 입력하면 자동으로 분석됩니다."
-          style="background:#f8fffe; border-color:#a8d8c0; color:#1a3a2a; font-size:13px; line-height:1.8; cursor:default; resize:none;"></textarea>
+          style="background:#f8fffe; border-color:#a8d8c0; color:#1a3a2a; font-size:13px; line-height:1.8; cursor:default; resize:none; overflow:hidden; height:auto;"></textarea>
       </div>
     </div>
   </div>
@@ -1098,13 +1222,11 @@
           <th>보고일</th>
           <td><input type="date" id="reportDate" /></td>
           <th>담당부서</th>
-          <td><input type="text" id="department" placeholder="예) 원무팀 / 질향상팀" /></td>
+          <td><input type="text" id="department" placeholder="" /></td>
         </tr>
         <tr>
-          <th>담당자</th>
-          <td><input type="text" id="manager" placeholder="이름" /></td>
-          <th>서명</th>
-          <td><input type="text" id="signature" placeholder="서명 또는 확인 도장" /></td>
+          <th>직책(급)/담당자</th>
+          <td colspan="3"><input type="text" id="manager" placeholder="이름/서명" style="width:100%;" /></td>
         </tr>
       </table>
     </div>
@@ -1337,6 +1459,7 @@
       data: { labels, datasets },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
             display: hasTarget, position: 'top',
@@ -1397,6 +1520,13 @@
     '병원 의료에 대한 전반적인 만족도'
   ];
 
+  function autoResizeAnalysis() {
+    const ta = document.getElementById('resultAnalysis');
+    if (!ta) return;
+    ta.style.height = 'auto';
+    ta.style.height = ta.scrollHeight + 'px';
+  }
+
   function generateAnalysis() {
     const textarea = document.getElementById('resultAnalysis');
     if (!textarea) return;
@@ -1405,7 +1535,7 @@
     const target = parseFloat(document.getElementById('targetScore').value);
     const hasTarget = !isNaN(target) && target > 0;
 
-    if (isNaN(result)) { textarea.value = ''; return; }
+    if (isNaN(result)) { textarea.value = ''; autoResizeAnalysis(); return; }
 
     // 분야별 점수 수집
     const cats = _CAT_NAMES.map((name, i) => {
@@ -1505,6 +1635,7 @@
     }
 
     textarea.value = lines.join('\n');
+    autoResizeAnalysis();
   }
 
   // 저장 시 세부항목 JSON도 저장
@@ -1612,7 +1743,7 @@
 
   // ── localStorage 저장 ──
   const FIELDS = [
-    'yearInput','defFormula','defInclude','defExclude','targetValue',
+    'yearInput','writeCycle','hospitalName','defFormula','defInclude','defExclude','targetValue',
     'surveyStart','surveyEnd','resultScore','targetScore','prevScore',
     'subScore1','subScore2','subScore3','subScore4','subScore5',
     'remarks',
@@ -1621,6 +1752,209 @@
     'approvalName1','approvalSign1','approvalDate1'
   ];
   const RADIOS = ['achieve','trend'];
+
+  // ── 파일로 저장 (JSON 내보내기) ────────────────────────────
+  function exportToFile() {
+    // 현재 모든 데이터 수집
+    const fieldData = {};
+    const allFields = [
+      'yearInput','writeCycle','hospitalName','defFormula','defInclude','defExclude','targetValue',
+      'surveyStart','surveyEnd','resultScore','targetScore','prevScore',
+      'subScore1','subScore2','subScore3','subScore4','subScore5',
+      'remarks','reportDate','department','manager','signature',
+      'approvalName0','approvalSign0','approvalDate0',
+      'approvalName1','approvalSign1','approvalDate1'
+    ];
+    allFields.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) fieldData[id] = el.value;
+    });
+    const achieveEl = document.querySelector('input[name="achieve"]:checked');
+    const trendEl   = document.querySelector('input[name="trend"]:checked');
+    const subData   = {};
+    for (let i = 1; i <= 5; i++) {
+      const rows = document.querySelectorAll(`#sub-rows-${i} .sub-item-row`);
+      subData[i]  = Array.from(rows).map(r => ({
+        name:  r.querySelector('.sub-item-name').value,
+        score: r.querySelector('.sub-item-score').value
+      }));
+    }
+    const analysisEl = document.getElementById('resultAnalysis');
+    const payload = {
+      _version:    '1.0',
+      _savedAt:    new Date().toISOString(),
+      fields:      fieldData,
+      radios:      { achieve: achieveEl ? achieveEl.value : '', trend: trendEl ? trendEl.value : '' },
+      subs:        subData,
+      analysis:    analysisEl ? analysisEl.value : '',
+      improveItems: JSON.parse(JSON.stringify(_improveItems))
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const a    = document.createElement('a');
+    const year = fieldData.yearInput || new Date().getFullYear();
+    const dept = fieldData.hospitalName || fieldData.department || '병원';
+    a.href     = URL.createObjectURL(blob);
+    const now = new Date();
+    const dtStr = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+    a.download = `환자만족도_${dept}_${year}_${dtStr}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+
+    // toast 알림
+    const toast = document.getElementById('saveToast');
+    if (toast) { toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2200); }
+  }
+
+  // ── 파일에서 불러오기 (JSON 가져오기) ───────────────────────
+  function loadFromFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (!data.fields) { alert('올바른 형식의 파일이 아닙니다.'); return; }
+
+        // ── 1단계: 모든 필드 직접 복원 (빈값도 명시적으로 처리) ──
+        const allFields = [
+          'yearInput','writeCycle','hospitalName','defFormula','defInclude','defExclude','targetValue',
+          'surveyStart','surveyEnd','resultScore','targetScore','prevScore',
+          'subScore1','subScore2','subScore3','subScore4','subScore5',
+          'remarks','reportDate','department','manager','signature',
+          'approvalName0','approvalSign0','approvalDate0',
+          'approvalName1','approvalSign1','approvalDate1'
+        ];
+        allFields.forEach(id => {
+          const el  = document.getElementById(id);
+          const val = data.fields[id];
+          if (el && val !== undefined && val !== null) el.value = val;
+        });
+
+        // ── 2단계: 조사기간 날짜 명시적 복원 ──
+        const ss = document.getElementById('surveyStart');
+        const se = document.getElementById('surveyEnd');
+        if (ss && data.fields.surveyStart) ss.value = data.fields.surveyStart;
+        if (se && data.fields.surveyEnd)   se.value = data.fields.surveyEnd;
+        calcSurveyDays();
+
+        // ── 3단계: 결과 분석 복원 ──
+        if (data.analysis) {
+          const ta = document.getElementById('resultAnalysis');
+          if (ta) { ta.value = data.analysis; autoResizeAnalysis(); }
+        }
+
+        // ── 4단계: 라디오 버튼 복원 ──
+        const radioMeta = {
+          achieved:   ['achieveGroup','a1','selected-achieve'],
+          failed:     ['achieveGroup','a2','selected-fail'],
+          maintained: ['achieveGroup','a3','selected-maintain'],
+          up:         ['trendGroup','t1','selected-up'],
+          same:       ['trendGroup','t2','selected-maintain'],
+          down:       ['trendGroup','t3','selected-down'],
+        };
+        if (data.radios) {
+          ['achieve','trend'].forEach(name => {
+            const val = data.radios[name];
+            if (!val) return;
+            const el = document.querySelector(`input[name="${name}"][value="${val}"]`);
+            if (el) { el.checked = true; const m = radioMeta[val]; if(m) styleRadio(m[0],m[1],m[2]); }
+          });
+        }
+
+        // ── 5단계: 세부항목 복원 ──
+        if (data.subs) {
+          for (let i = 1; i <= 5; i++) {
+            const items = data.subs[i] || [];
+            document.getElementById(`sub-rows-${i}`).innerHTML = '';
+            items.forEach(it => addSubItem(i, it.name, it.score));
+          }
+        }
+
+        // ── 6단계: 목표값 연동 ──
+        const tv = document.getElementById('targetValue');
+        const ts = document.getElementById('targetScore');
+        if (tv && ts) {
+          if (tv.value && !ts.value) ts.value = tv.value;
+          else if (ts.value && !tv.value) tv.value = ts.value;
+        }
+
+        // ── 7단계: 개선활동 복원 (중복 없이 1회만) ──
+        _improveItems = [];
+        _improveNextId = 1;
+        if (data.improveItems && data.improveItems.length) {
+          data.improveItems.forEach(it => addImproveItem(it));
+          _improveNextId = Math.max(..._improveItems.map(i => i.id)) + 1;
+        } else {
+          renderImproveItems();
+        }
+
+        // ── 8단계: 게이지·분석 갱신 ──
+        updateGauge();
+        generateAnalysis();
+
+        alert('데이터를 성공적으로 불러왔습니다.');
+      } catch(err) {
+        alert('파일을 읽는 중 오류가 발생했습니다: ' + err.message);
+      }
+    };
+    reader.readAsText(file, 'utf-8');
+    input.value = '';
+  }
+
+  // ── 인쇄: 차트 모두 펼친 후 인쇄 ────────────────────────
+  function toggleAllCats() {
+    const btn = document.getElementById('expandAllBtn');
+    const allOpen = [1,2,3,4,5].every(i => {
+      const body = document.getElementById('cat-body-' + i);
+      return body && body.style.display === 'block';
+    });
+    [1,2,3,4,5].forEach(i => {
+      const body = document.getElementById('cat-body-' + i);
+      const tb   = document.getElementById('toggle-btn-' + i);
+      if (allOpen) {
+        if (body) body.style.display = 'none';
+        if (tb) { tb.textContent = '▼ 세부항목'; tb.classList.remove('open'); }
+      } else {
+        if (body) body.style.display = 'block';
+        if (tb) { tb.textContent = '▲ 세부항목'; tb.classList.add('open'); }
+        renderSubChart(i);
+      }
+    });
+    if (btn) btn.textContent = allOpen ? '⊞ 전체 펼치기' : '⊟ 전체 접기';
+  }
+
+  function printReport() {
+    // 모든 세부분야 아코디언 펼치기
+    for (let i = 1; i <= 5; i++) {
+      const body = document.getElementById('sub-body-' + i);
+      const btn  = document.getElementById('toggle-btn-' + i);
+      if (body && body.style.display === 'none') {
+        body.style.display = 'block';
+        if (btn) btn.classList.add('open');
+        renderSubChart(i);
+      }
+    }
+    // 결과 분석 textarea -> div 교체 (인쇄 시 전체 내용 표시)
+    const ta = document.getElementById('resultAnalysis');
+    let printDiv = null;
+    if (ta) {
+      printDiv = document.createElement('div');
+      printDiv.id = 'resultAnalysisPrintDiv';
+      printDiv.style.cssText = 'white-space:pre-wrap; font-size:13px; line-height:1.8; color:#1a3a2a; background:#f8fffe; border:1px solid #a8d8c0; border-radius:8px; padding:12px; width:100%; box-sizing:border-box;';
+      printDiv.textContent = ta.value;
+      ta.style.display = 'none';
+      ta.parentNode.insertBefore(printDiv, ta.nextSibling);
+    }
+    // 차트 렌더링 완료 후 인쇄
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      window.print();
+      // 인쇄 후 복원
+      if (ta) ta.style.display = '';
+      if (printDiv) printDiv.remove();
+    }));
+  }
 
   function saveData() {
     FIELDS.forEach(id => {
@@ -1642,13 +1976,15 @@
   function loadData() {
     const sd = window._SD;
     FIELDS.forEach(id => {
-      const val = sd ? (sd.fields[id] ?? '') : localStorage.getItem('report_' + id);
+      // sd 모드: 파일에 해당 키가 없으면 건드리지 않음 (날짜 초기화 방지)
+      const val = sd ? (id in sd.fields ? sd.fields[id] : null)
+                     : localStorage.getItem('report_' + id);
       const el  = document.getElementById(id);
       if (el && val !== null && val !== undefined) el.value = val;
     });
     if (sd && sd.analysis) {
       const ta = document.getElementById('resultAnalysis');
-      if (ta) ta.value = sd.analysis;
+      if (ta) { ta.value = sd.analysis; autoResizeAnalysis(); }
     }
     const achieveVal = sd ? sd.radios.achieve : localStorage.getItem('report_radio_achieve');
     const trendVal   = sd ? sd.radios.trend   : localStorage.getItem('report_radio_trend');
@@ -1728,7 +2064,7 @@
       });
       document.getElementById('hospitalSelector').style.display = 'flex';
     } catch(e) {
-      console.log('서버 없음 - 로컬 모드로 동작', e);
+      // 서버 없음 - 로컬 모드로 동작
     }
   }
 
@@ -1998,6 +2334,16 @@
     loadData();
     generateAnalysis();
     loadHospitalList(); // 서버 모드 감지 및 병원 목록 로드
+    // 세부항목 전체 기본 펼치기
+    [1,2,3,4,5].forEach(i => {
+      const body = document.getElementById('cat-body-' + i);
+      const tb   = document.getElementById('toggle-btn-' + i);
+      if (body) body.style.display = 'block';
+      if (tb) { tb.textContent = '▲ 세부항목'; tb.classList.add('open'); }
+      renderSubChart(i);
+    });
+    const expandBtn = document.getElementById('expandAllBtn');
+    if (expandBtn) expandBtn.textContent = '⊟ 전체 접기';
   });
 
   document.addEventListener('keydown', e => {
